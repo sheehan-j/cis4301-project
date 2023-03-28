@@ -27,6 +27,7 @@ router.use(function (req, res, next) {
 
 // Routes
 router.route("/test/").get(testsController.getTest);
+
 // Start server
 app.use(express.static("static"));
 app.use("/api", router);
