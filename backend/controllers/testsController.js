@@ -6,7 +6,7 @@ exports.getTest = async (req, res) => {
 	try {
 		const result = await executeQuery(`
       SELECT month, SUM(deaths) as deaths
-      FROM Deaths
+      FROM JORDANSHEEHAN.Deaths
       WHERE condition = 3
       AND year = 2021
       AND state = 40

@@ -5,6 +5,7 @@ const executeQuery = async (query) => {
 	let conn;
 
 	try {
+		console.log(connConfig);
 		conn = await oracledb.getConnection(connConfig);
 		const result = await conn.execute(
 			query,
