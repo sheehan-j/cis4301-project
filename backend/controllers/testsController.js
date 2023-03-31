@@ -1,4 +1,3 @@
-const oracledb = require("oracledb");
 const executeQuery = require("../util/executeQuery");
 const translateLabels = require("../util/translateLabels");
 

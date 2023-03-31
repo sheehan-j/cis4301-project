@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomeScr from "./screens/HomeScr";
-import DataScr from "./screens/DataScr";
+import VisualizationScr from "./screens/VisualizationScr";
 
 function App() {
 	return (
@@ -9,7 +9,7 @@ function App() {
 			<Route path="/" element={<Layout />}>
 				<Route index element={<HomeScr />} />
 				<Route path="data">
-					<Route index element={<DataScr />} />
+					<Route index element={<VisualizationScr />} />
 				</Route>
 			</Route>
 		</Routes>
