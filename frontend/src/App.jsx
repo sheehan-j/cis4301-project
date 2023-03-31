@@ -8,7 +8,7 @@ function App() {
 		<Routes>
 			<Route path="/" element={<Layout />}>
 				<Route index element={<HomeScr />} />
-				<Route path="data">
+				<Route path="visualization">
 					<Route index element={<VisualizationScr />} />
 				</Route>
 			</Route>
