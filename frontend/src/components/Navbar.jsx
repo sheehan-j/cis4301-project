@@ -10,7 +10,8 @@ const Navbar = ({ active }) => {
 		},
 		navbar: {
 			width: "100%",
-			backgroundColor: "#E14D2A",
+			// backgroundColor: "#E14D2A",
+			backgroundColor: "#3a5a40",
 			borderRadius: "10px",
 			paddingTop: "1.5rem",
 			paddingBottom: "1.5rem",
@@ -23,7 +24,7 @@ const Navbar = ({ active }) => {
 		},
 		navlink: {
 			fontFamily: "Inter",
-			fontWeight: "500",
+			fontWeight: "400",
 			fontSize: "1.1rem",
 			color: "white",
 			textDecoration: "none",
@@ -32,7 +33,7 @@ const Navbar = ({ active }) => {
 		},
 		navlinkActive: {
 			fontFamily: "Inter",
-			fontWeight: "700",
+			fontWeight: "600",
 			borderBottom: "1px solid white",
 			fontSize: "1.1rem",
 			color: "white",
@@ -45,7 +46,13 @@ const Navbar = ({ active }) => {
 	return (
 		<div style={styles.container}>
 			<div style={styles.navbar}>
-				<div style={{ ...styles.navlink, cursor: "default" }}>
+				<div
+					style={{
+						...styles.navlink,
+						cursor: "default",
+						fontWeight: "700",
+					}}
+				>
 					COVID-19 Deaths
 				</div>
 

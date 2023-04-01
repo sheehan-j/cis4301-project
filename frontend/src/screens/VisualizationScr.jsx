@@ -7,12 +7,21 @@ import {
 	LineElement,
 	Title,
 	Tooltip,
-	Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import {
+	defaultData,
+	trendlineGroupingOptions,
+	temporalGranularityOptions,
+	monthlyDateOptions,
+	yearlyDateOptions,
+	trendlineColors,
+} from "../config/trendlineConfig";
+import { apiCall } from "../api/VisualizationApi";
 import Loading from "../components/Loading";
 import Navbar from "../components/Navbar";
-import Select from "react-select";
+import Selector from "../components/Selector";
+import TrendlineSelector from "../components/TrendlineSelector";
 
 ChartJS.register(
 	CategoryScale,
@@ -20,40 +29,22 @@ ChartJS.register(
 	PointElement,
 	LineElement,
 	Title,
-	Tooltip,
-	Legend
+	Tooltip
 );
 
-export const defaultData = {
-	labels: [
-		"Jan",
-		"Feb",
-		"Mar",
-		"Apr",
-		"May",
-		"Jun",
-		"Jul",
-		"Aug",
-		"Sep",
-		"Oct",
-		"Nov",
-		"Dec",
-	],
-	datasets: [
-		{
-			label: "",
-			data: [],
-			borderColor: "rgb(255, 99, 132)",
-			backgroundColor: "rgba(255, 99, 132, 0.5)",
-		},
-	],
-};
-
 const VisualizationScr = () => {
-	const [testData, setTestData] = useState(defaultData);
-	const [isLoading, setIsLoading] = useState(true);
+	const [visualizedData, setVisualizedData] = useState(defaultData);
+	const [allData, setAllData] = useState(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [groupingOption, setGroupingOption] = useState(null);
+	const [granularityOption, setGranularityOption] = useState(null);
+	const [currentDateOptions, setCurrentDateOptions] = useState(null);
+	const [minDateOption, setMinDateOption] = useState(null);
+	const [maxDateOption, setMaxDateOption] = useState(null);
+	const [dateSelectIsDisabled, setDateSelectIsDisabled] = useState(true);
+	const [activeTrendlines, setActiveTrendlines] = useState(0);
 
-	// Handle enforcing aspect ratio of 2 on chart container div
+	// Handle width, height, and styling for the chart
 	const [width, setWidth] = useState(0);
 	useEffect(() => {
 		const handleResize = () => {
@@ -67,38 +58,122 @@ const VisualizationScr = () => {
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 	const height = width / 2;
+	const chartStyle = {
+		opacity: isLoading ? 0.25 : 1,
+	};
 
+	// Handle necessary changes for temporal granularity
 	useEffect(() => {
-		const loadData = async () => {
-			const TEST_URL = "http://localhost:8089/api/test";
+		setDateSelectIsDisabled(granularityOption === null ? true : false);
+		setMinDateOption(null);
+		setMaxDateOption(null);
+		if (granularityOption) {
+			setCurrentDateOptions(
+				granularityOption.value === "monthly"
+					? monthlyDateOptions
+					: yearlyDateOptions
+			);
+		} else {
+			setCurrentDateOptions(null);
+		}
+	}, [granularityOption]);
 
-			const response = await fetch(TEST_URL, {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-			const result = await response.json();
+	const handleVisualize = async () => {
+		setIsLoading(true);
+		setVisualizedData(defaultData);
+		setAllData(null);
 
-			const data = {
-				labels: result.labels,
-				datasets: [
-					{
-						label: "Test Data",
-						data: result.values,
-						fill: false,
-						borderColor: "rgb(75, 192, 192)",
-						tension: 0.1,
-					},
-				],
-			};
+		const result = await apiCall(
+			groupingOption.value,
+			granularityOption.value,
+			minDateOption.value,
+			maxDateOption.value
+		);
 
-			setTestData(data);
-			setIsLoading(false);
+		// Add an attribute to track whether
+		// each trendline is being visualized
+		result.map((item, index) => {
+			item.active = index <= 4;
+			item.id = index;
+			item.color = trendlineColors[index];
+			return item;
+		});
+
+		const datasets = [];
+		result.forEach((item) => {
+			if (item.active) {
+				const newDataset = {
+					label: item.name,
+					data: item.values,
+					borderColor: item.color,
+					backgroundColor: item.color,
+				};
+
+				datasets.push(newDataset);
+			}
+		});
+
+		const data = {
+			labels: result[0].labels,
+			datasets: datasets,
 		};
 
-		loadData();
-	}, []);
+		setActiveTrendlines(5);
+		setVisualizedData(data);
+		setAllData(result);
+		setIsLoading(false);
+	};
+
+	const handleTrendlineSelectorClicked = (id) => {
+		const targetSelector = allData.filter((item) => item.id === id)[0];
+
+		if (targetSelector.active) {
+			setActiveTrendlines(activeTrendlines - 1);
+			targetSelector.active = false;
+		} else {
+			setActiveTrendlines(activeTrendlines + 1);
+			targetSelector.active = true;
+		}
+
+		// Replace target selector with its replaced version
+		let newAllData = allData;
+		newAllData.map((item) => {
+			return item.id === id ? targetSelector : item;
+		});
+
+		// Remap trendline colors based on what is now active
+		let activeCount = 0;
+		newAllData.map((item) => {
+			if (item.active) {
+				item.color = trendlineColors[activeCount];
+				activeCount++;
+			}
+
+			return item;
+		});
+
+		let newDatasets = [];
+		newAllData.forEach((item) => {
+			if (item.active) {
+				const newDataset = {
+					label: item.name,
+					data: item.values,
+					borderColor: item.color,
+					backgroundColor: item.color,
+				};
+
+				newDatasets.push(newDataset);
+			}
+		});
+
+		const newVisualizedData = {
+			labels: newAllData[0].labels,
+			datasets: newDatasets,
+		};
+
+		setAllData(newAllData);
+		setVisualizedData(newVisualizedData);
+	};
 
 	return (
 		<div style={styles.container}>
@@ -108,35 +183,48 @@ const VisualizationScr = () => {
 				<div style={styles.parametersSection}>
 					<div
 						style={{
-							fontFamily: "Inter",
-							color: "#363636",
-							fontWeight: "700",
-							fontSize: "1.2rem",
+							width: "100%",
+							display: "flex",
+							flexDirection: "row",
 						}}
 					>
-						Customize Visualization Parameters
+						<Selector
+							label={"Trendline Grouping"}
+							selectOptions={trendlineGroupingOptions}
+							value={groupingOption}
+							onChange={setGroupingOption}
+							isDisabled={false}
+						/>
+						<Selector
+							label={"Temporal Granularity"}
+							selectOptions={temporalGranularityOptions}
+							value={granularityOption}
+							onChange={setGranularityOption}
+							isDisabled={false}
+						/>
+						<Selector
+							label={"Minimum Date"}
+							selectOptions={currentDateOptions}
+							value={minDateOption}
+							onChange={setMinDateOption}
+							isDisabled={dateSelectIsDisabled}
+						/>
+						<Selector
+							label={"Maximum Date"}
+							selectOptions={currentDateOptions}
+							value={maxDateOption}
+							onChange={setMaxDateOption}
+							isDisabled={dateSelectIsDisabled}
+						/>
 						<div
-							style={{
-								fontWeight: "400",
-								textAlign: "start",
-								fontSize: "0.8rem",
-								width: "50%",
-							}}
+							style={styles.visualizeButton}
+							onClick={handleVisualize}
 						>
-							<Select
-								options={options}
-								styles={{
-									control: (baseStyles, state) => ({
-										...baseStyles,
-										borderColor: state.isFocused
-											? "blue"
-											: "grey",
-									}),
-								}}
-							/>
+							<div style={styles.visualizeText}>Visualize</div>
 						</div>
 					</div>
 				</div>
+
 				<div
 					style={{
 						display: "flex",
@@ -148,13 +236,40 @@ const VisualizationScr = () => {
 						id="chart-div"
 						style={{
 							...styles.chart,
+							position: "relative",
 							height: `${height}px`,
 						}}
 					>
 						{isLoading && <Loading />}
-						{!isLoading && <Line data={testData} />}
+						<Line data={visualizedData} style={chartStyle} />
 					</div>
-					<div style={styles.sidebar}>b</div>
+					<div style={styles.sidebar}>
+						<div
+							style={{
+								fontFamily: "Inter",
+								fontSize: "0.9rem",
+								fontWeight: "600",
+								textAlign: "start",
+								marginBottom: "0.5rem",
+							}}
+						>
+							Active Trendlines
+						</div>
+						{allData &&
+							allData.map((item) => (
+								<TrendlineSelector
+									key={item.id}
+									id={item.id}
+									label={item.name}
+									active={item.active}
+									color={item.color}
+									disabledIfInactive={activeTrendlines >= 5}
+									handleOnClick={
+										handleTrendlineSelectorClicked
+									}
+								/>
+							))}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -188,21 +303,42 @@ const styles = {
 		backgroundColor: "white",
 		marginLeft: "0.5rem",
 		borderRadius: "15px",
+		padding: "1rem",
 	},
 	parametersSection: {
 		display: "flex",
 		flex: 1,
+		flexDirection: "column",
+		alignItems: "start",
 		backgroundColor: "white",
 		borderRadius: "15px",
-		marginBottom: "0.5rem",
-		padding: "1.3rem",
+		marginBottom: "1rem",
+		paddingLeft: "0.8rem",
+		paddingRight: "1.3rem",
+		paddingTop: "1.3rem",
+		paddingBottom: "1.3rem",
+	},
+	visualizeButton: {
+		flex: 0.75,
+		display: "flex",
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "#3a5a40",
+		boxSizing: "border-box",
+		paddingTop: "0.9rem",
+		paddingBottom: "0.9rem",
+		paddingLeft: "1rem",
+		paddingRight: "1rem",
+		borderRadius: "10px",
+		marginLeft: "0.5rem",
+		cursor: "pointer",
+	},
+	visualizeText: {
+		fontFamily: "Inter",
+		color: "white",
+		fontWeight: "600",
+		fontSize: "1.05rem",
 	},
 };
-
-const options = [
-	{ value: "chocolate", label: "Chocolate" },
-	{ value: "strawberry", label: "Strawberry" },
-	{ value: "vanilla", label: "Vanilla" },
-];
 
 export default VisualizationScr;

@@ -6,7 +6,7 @@ const router = express.Router();
 const morgan = require("morgan");
 require("dotenv").config();
 
-const testsController = require("./controllers/testsController");
+const avgByAgeController = require("./controllers/avgByAgeController");
 
 // Configure middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,9 +26,15 @@ router.use(function (req, res, next) {
 });
 
 // Routes
-router.route("/test/").get(testsController.getTest);
+router
+	.route("/age-group/monthly/:min/:max")
+	.get(avgByAgeController.getAgeGroupDataMonthly);
+router
+	.route("/age-group/yearly/:min/:max")
+	.get(avgByAgeController.getAgeGroupDataYearly);
 
 // Start server
 app.use(express.static("static"));
 app.use("/api", router);
+console.log(`Server starting on port ${PORT}...`);
 app.listen(PORT);

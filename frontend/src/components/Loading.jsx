@@ -4,12 +4,10 @@ const Loading = () => {
 	return (
 		<div
 			style={{
-				width: "100%",
-				height: "100%",
-				// backgroundColor: "rgba(100,100,100,0.05)",
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
+				position: "absolute",
+				top: "50%",
+				left: "50%",
+				transform: "translate(-50%, -50%)",
 			}}
 		>
 			<DotWave size={47} speed={1.5} color="rgba(20,20,20,0.8)" />

@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const connConfig = {
 	user: process.env.DBAAS_USER_NAME || "oracle",
 	password: process.env.DBAAS_USER_PASSWORD || "oracle",
