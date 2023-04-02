@@ -1,3 +1,4 @@
+// Packages
 import { useEffect, useState } from "react";
 import {
 	Chart as ChartJS,
@@ -10,6 +11,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
+// Config
 import {
 	defaultData,
 	trendlineGroupingOptions,
@@ -19,10 +21,12 @@ import {
 	trendlineColors,
 } from "../config/trendlineConfig";
 
+// Util/APIs
 import TotalCountsApi from "../api/TotalCountsApi";
 import { ApiCall } from "../util/ApiCall";
 import { UpdateNewActiveTrendlines } from "../util/UpdateNewActiveTrendlines";
 
+// Components/styling
 import Loading from "../components/Loading";
 import Navbar from "../components/Navbar";
 import Selector from "../components/Selector";
