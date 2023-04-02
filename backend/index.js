@@ -6,10 +6,11 @@ const router = express.Router();
 const morgan = require("morgan");
 require("dotenv").config();
 
-const avgByAgeController = require("./controllers/avgByAgeController");
-const avgByStateController = require("./controllers/avgByStateController");
-const avgByConditionController = require("./controllers/avgByConditionController");
-const avgByConditionGroupController = require("./controllers/avgByConditionGroupController");
+const AvgByAgeController = require("./controllers/AvgByAgeController");
+const AvgByStateController = require("./controllers/AvgByStateController");
+const AvgByConditionController = require("./controllers/AvgByConditionController");
+const AvgByConditionGroupController = require("./controllers/AvgByConditionGroupController");
+const TotalCountsController = require("./controllers/TotalCountsController");
 
 // Configure middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -31,28 +32,30 @@ router.use(function (req, res, next) {
 // Routes
 router
 	.route("/age-group/monthly/:min/:max")
-	.get(avgByAgeController.getAgeGroupDataMonthly);
+	.get(AvgByAgeController.getAgeGroupDataMonthly);
 router
 	.route("/age-group/yearly/:min/:max")
-	.get(avgByAgeController.getAgeGroupDataYearly);
+	.get(AvgByAgeController.getAgeGroupDataYearly);
 router
 	.route("/condition/monthly/:min/:max")
-	.get(avgByConditionController.getConditionDataMonthly);
+	.get(AvgByConditionController.getConditionDataMonthly);
 router
 	.route("/condition/yearly/:min/:max")
-	.get(avgByConditionController.getConditionDataYearly);
+	.get(AvgByConditionController.getConditionDataYearly);
 router
 	.route("/condition-group/monthly/:min/:max")
-	.get(avgByConditionGroupController.getConditionGroupDataMonthly);
+	.get(AvgByConditionGroupController.getConditionGroupDataMonthly);
 router
 	.route("/condition-group/yearly/:min/:max")
-	.get(avgByConditionGroupController.getConditionGroupDataYearly);
+	.get(AvgByConditionGroupController.getConditionGroupDataYearly);
 router
 	.route("/state/monthly/:min/:max")
-	.get(avgByStateController.getStateDataMonthly);
+	.get(AvgByStateController.getStateDataMonthly);
 router
 	.route("/state/yearly/:min/:max")
-	.get(avgByStateController.getStateDataYearly);
+	.get(AvgByStateController.getStateDataYearly);
+
+router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
 
 // Start server
 app.use(express.static("static"));
