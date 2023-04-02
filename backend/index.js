@@ -7,6 +7,9 @@ const morgan = require("morgan");
 require("dotenv").config();
 
 const avgByAgeController = require("./controllers/avgByAgeController");
+const avgByStateController = require("./controllers/avgByStateController");
+const avgByConditionController = require("./controllers/avgByConditionController");
+const avgByConditionGroupController = require("./controllers/avgByConditionGroupController");
 
 // Configure middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,6 +35,21 @@ router
 router
 	.route("/age-group/yearly/:min/:max")
 	.get(avgByAgeController.getAgeGroupDataYearly);
+router
+	.route("/condition/monthly/:min/:max")
+	.get(avgByConditionController.getConditionDataMonthly);
+router
+	.route("/condition/yearly/:min/:max")
+	.get(avgByConditionController.getConditionDataYearly);
+router
+	.route("/condition-group/monthly/:min/:max")
+	.get(avgByConditionGroupController.getConditionGroupDataMonthly);
+router
+	.route("/state/monthly/:min/:max")
+	.get(avgByStateController.getStateDataMonthly);
+router
+	.route("/state/yearly/:min/:max")
+	.get(avgByStateController.getStateDataYearly);
 
 // Start server
 app.use(express.static("static"));

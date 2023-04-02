@@ -2,7 +2,7 @@ const executeQuery = require("../util/executeQuery");
 const translateLabels = require("../util/translateLabels");
 const reformatData = require("../util/reformatData");
 
-exports.getAgeGroupDataMonthly = async (req, res) => {
+exports.getConditionDataMonthly = async (req, res) => {
 	try {
 		// Monthly dates are formatted like "3_2020", split
 		// them apart to get year and month individually
@@ -45,24 +45,25 @@ exports.getAgeGroupDataMonthly = async (req, res) => {
       SELECT 
         year, 
         month, 
-        age_group, 
+        c.name as condition, 
         AVG(deaths) as deaths
-      FROM JORDANSHEEHAN.Deaths
+      FROM JORDANSHEEHAN.Deaths d
+      JOIN JORDANSHEEHAN.Condition c ON d.condition = c.id
       ${dateRangeClause}
-      GROUP BY year, month, age_group
-      ORDER BY year, age_group, month
-		`);
+      GROUP BY year, month, c.name
+      ORDER BY year, month, c.name
+    `);
 
-		const ageGroups = await executeQuery(`
-      SELECT DISTINCT age_group
-      FROM JORDANSHEEHAN.Deaths
-      ORDER BY age_group
+		const conditions = await executeQuery(`
+      SELECT name as condition
+      FROM JORDANSHeehan.Condition
+      ORDER BY name
     `);
 
 		const result = await reformatData(
 			queryResult,
-			ageGroups,
-			"AGE_GROUP",
+			conditions,
+			"CONDITION",
 			"MONTH",
 			"DEATHS"
 		);
@@ -75,34 +76,35 @@ exports.getAgeGroupDataMonthly = async (req, res) => {
 		return res.status(200).json(result);
 	} catch (err) {
 		console.error(err);
-		return res.status(400).json({ message: err.message });
+		res.status(400).json({ error: err.message });
 	}
 };
 
-exports.getAgeGroupDataYearly = async (req, res) => {
+exports.getConditionDataYearly = async (req, res) => {
 	try {
 		const queryResult = await executeQuery(`
       SELECT 
         year,  
-        age_group, 
+        c.name as condition, 
         AVG(deaths) as deaths
-      FROM JORDANSHEEHAN.Deaths
+      FROM JORDANSHEEHAN.Deaths d
+      JOIN JORDANSHEEHAN.Condition c ON d.condition = c.id
       WHERE year >= ${req.params.min}
-      AND year <= ${req.params.max}
-      GROUP BY year, age_group
-      ORDER BY year, age_group
-		`);
+        AND year <= ${req.params.max}
+      GROUP BY year, c.name
+      ORDER BY year, c.name
+    `);
 
-		const ageGroups = await executeQuery(`
-      SELECT DISTINCT age_group
-      FROM JORDANSHEEHAN.Deaths
-      ORDER BY age_group
+		const conditions = await executeQuery(`
+      SELECT name as condition
+      FROM JORDANSHEEHAN.Condition
+      ORDER BY name
     `);
 
 		const result = await reformatData(
 			queryResult,
-			ageGroups,
-			"AGE_GROUP",
+			conditions,
+			"CONDITION",
 			"YEAR",
 			"DEATHS"
 		);
@@ -110,6 +112,6 @@ exports.getAgeGroupDataYearly = async (req, res) => {
 		return res.status(200).json(result);
 	} catch (err) {
 		console.error(err);
-		return res.status(400).json({ message: err.message });
+		res.status(400).json({ error: err.message });
 	}
 };

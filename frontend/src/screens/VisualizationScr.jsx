@@ -22,6 +22,7 @@ import Loading from "../components/Loading";
 import Navbar from "../components/Navbar";
 import Selector from "../components/Selector";
 import TrendlineSelector from "../components/TrendlineSelector";
+import scrollbarStyles from "./Scrollbar.css";
 
 ChartJS.register(
 	CategoryScale,
@@ -176,11 +177,11 @@ const VisualizationScr = () => {
 	};
 
 	return (
-		<div style={styles.container}>
+		<div style={visStlyes.container}>
 			<Navbar active={"Visualizations"} />
 
-			<div style={styles.visualizationArea}>
-				<div style={styles.parametersSection}>
+			<div style={visStlyes.visualizationArea}>
+				<div style={visStlyes.parametersSection}>
 					<div
 						style={{
 							width: "100%",
@@ -217,10 +218,10 @@ const VisualizationScr = () => {
 							isDisabled={dateSelectIsDisabled}
 						/>
 						<div
-							style={styles.visualizeButton}
+							style={visStlyes.visualizeButton}
 							onClick={handleVisualize}
 						>
-							<div style={styles.visualizeText}>Visualize</div>
+							<div style={visStlyes.visualizeText}>Visualize</div>
 						</div>
 					</div>
 				</div>
@@ -235,7 +236,7 @@ const VisualizationScr = () => {
 					<div
 						id="chart-div"
 						style={{
-							...styles.chart,
+							...visStlyes.chart,
 							position: "relative",
 							height: `${height}px`,
 						}}
@@ -243,32 +244,40 @@ const VisualizationScr = () => {
 						{isLoading && <Loading />}
 						<Line data={visualizedData} style={chartStyle} />
 					</div>
-					<div style={styles.sidebar}>
+					<div style={visStlyes.sidebar}>
 						<div
-							style={{
-								fontFamily: "Inter",
-								fontSize: "0.9rem",
-								fontWeight: "600",
-								textAlign: "start",
-								marginBottom: "0.5rem",
-							}}
+							style={visStlyes.sidebarInner}
+							className={scrollbarStyles["hideScrollbar"]}
 						>
-							Active Trendlines
+							<div
+								style={{
+									fontFamily: "Inter",
+									fontSize: "0.9rem",
+									fontWeight: "600",
+									textAlign: "start",
+									marginBottom: "0.5rem",
+									color: "#363636",
+								}}
+							>
+								Active Trendlines
+							</div>
+							{allData &&
+								allData.map((item) => (
+									<TrendlineSelector
+										key={item.id}
+										id={item.id}
+										label={item.name}
+										active={item.active}
+										color={item.color}
+										disabledIfInactive={
+											activeTrendlines >= 5
+										}
+										handleOnClick={
+											handleTrendlineSelectorClicked
+										}
+									/>
+								))}
 						</div>
-						{allData &&
-							allData.map((item) => (
-								<TrendlineSelector
-									key={item.id}
-									id={item.id}
-									label={item.name}
-									active={item.active}
-									color={item.color}
-									disabledIfInactive={activeTrendlines >= 5}
-									handleOnClick={
-										handleTrendlineSelectorClicked
-									}
-								/>
-							))}
 					</div>
 				</div>
 			</div>
@@ -276,7 +285,7 @@ const VisualizationScr = () => {
 	);
 };
 
-const styles = {
+const visStlyes = {
 	container: {
 		flex: 1,
 		display: "flex",
@@ -300,10 +309,17 @@ const styles = {
 	},
 	sidebar: {
 		flex: 1,
+		display: "flex",
+		flexDirection: "column",
 		backgroundColor: "white",
 		marginLeft: "0.5rem",
 		borderRadius: "15px",
 		padding: "1rem",
+	},
+	sidebarInner: {
+		width: "100%",
+		flex: "1 1 0",
+		overflow: "auto",
 	},
 	parametersSection: {
 		display: "flex",

@@ -36,6 +36,7 @@ const TrendlineSelector = ({
 					backgroundColor: selectorColor,
 					borderRadius: "4px",
 					border: active ? null : "0.4px #c5c5c5 solid",
+					flexShrink: 0,
 				}}
 			/>
 			<div
@@ -43,6 +44,7 @@ const TrendlineSelector = ({
 					fontFamily: "Inter",
 					fontSize: "0.8rem",
 					marginLeft: "0.3rem",
+					textAlign: "start",
 					textDecoration:
 						!active && disabledIfInactive ? "line-through" : "none",
 				}}
