@@ -79,3 +79,39 @@ exports.getConditionGroupDataMonthly = async (req, res) => {
 		res.status(400).json({ error: err.message });
 	}
 };
+
+exports.getConditionGroupDataYearly = async (req, res) => {
+	try {
+		const queryResult = await executeQuery(`
+      SELECT 
+        year,  
+        cg.name as condition_group, 
+        AVG(deaths) as deaths
+      FROM JORDANSHEEHAN.Deaths d
+      JOIN JORDANSHEEHAN.ConditionGroup cg ON d.condition_group = cg.id
+      WHERE year >= ${req.params.min}
+        AND year <= ${req.params.max}
+      GROUP BY year, cg.name
+      ORDER BY year, cg.name
+    `);
+
+		const conditionGroups = await executeQuery(`
+      SELECT name as condition_group
+      FROM JORDANSHeehan.ConditionGroup
+      ORDER BY name
+    `);
+
+		const result = await reformatData(
+			queryResult,
+			conditionGroups,
+			"CONDITION_GROUP",
+			"YEAR",
+			"DEATHS"
+		);
+
+		return res.status(200).json(result);
+	} catch (err) {
+		console.error(err);
+		res.status(400).json({ error: err.message });
+	}
+};

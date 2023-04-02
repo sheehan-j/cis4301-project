@@ -45,6 +45,9 @@ router
 	.route("/condition-group/monthly/:min/:max")
 	.get(avgByConditionGroupController.getConditionGroupDataMonthly);
 router
+	.route("/condition-group/yearly/:min/:max")
+	.get(avgByConditionGroupController.getConditionGroupDataYearly);
+router
 	.route("/state/monthly/:min/:max")
 	.get(avgByStateController.getStateDataMonthly);
 router
