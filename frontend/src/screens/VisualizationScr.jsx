@@ -19,11 +19,12 @@ import {
 	monthlyDateOptions,
 	yearlyDateOptions,
 	trendlineColors,
+	visTypeOptions,
 } from "../config/trendlineConfig";
 
 // Util/APIs
 import TotalCountsApi from "../api/TotalCountsApi";
-import { ApiCall } from "../util/ApiCall";
+import { AverageApiCall } from "../util/ApiCall";
 import { UpdateNewActiveTrendlines } from "../util/UpdateNewActiveTrendlines";
 
 // Components/styling
@@ -31,7 +32,7 @@ import Loading from "../components/Loading";
 import Navbar from "../components/Navbar";
 import Selector from "../components/Selector";
 import TrendlineSelector from "../components/TrendlineSelector";
-import scrollbarStyles from "./Scrollbar.css";
+import "./VisualizationScr.css";
 
 ChartJS.register(
 	CategoryScale,
@@ -46,6 +47,7 @@ const VisualizationScr = () => {
 	const [visualizedData, setVisualizedData] = useState(defaultData);
 	const [allData, setAllData] = useState(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [activeVisType, setActiveVisType] = useState(visTypeOptions[0]);
 	const [groupingOption, setGroupingOption] = useState(null);
 	const [granularityOption, setGranularityOption] = useState(null);
 	const [currentDateOptions, setCurrentDateOptions] = useState(null);
@@ -57,11 +59,15 @@ const VisualizationScr = () => {
 
 	// Handle width, height, and styling for the chart
 	const [width, setWidth] = useState(0);
+	const [navbarHeight, setNavbarHeight] = useState(0);
 	useEffect(() => {
 		const handleResize = () => {
 			const chartDiv = document.getElementById("chart-div");
+			const navbar = document.getElementById("navbar-container");
 			const newWidth = chartDiv.offsetWidth;
+			const newHeight = navbar.offsetHeight;
 			setWidth(newWidth);
+			setNavbarHeight(newHeight);
 		};
 
 		handleResize();
@@ -104,12 +110,21 @@ const VisualizationScr = () => {
 		setVisualizedData(defaultData);
 		setAllData(null);
 
-		const result = await ApiCall(
-			groupingOption.value,
-			granularityOption.value,
-			minDateOption.value,
-			maxDateOption.value
-		);
+		let result;
+
+		switch (activeVisType.value) {
+			case "average":
+				result = await AverageApiCall(
+					groupingOption.value,
+					granularityOption.value,
+					minDateOption.value,
+					maxDateOption.value
+				);
+				break;
+			default:
+				alert("Error in visualization handler.");
+				break;
+		}
 
 		// Add an attribute to track whether
 		// each trendline is being visualized
@@ -157,52 +172,120 @@ const VisualizationScr = () => {
 	};
 
 	return (
-		<div style={visStlyes.container}>
+		<div style={{ ...styles.container, paddingTop: `${navbarHeight}px` }}>
 			<Navbar active={"Visualizations"} />
 
-			<div style={visStlyes.visualizationArea}>
-				<div style={visStlyes.parametersSection}>
-					<div
-						style={{
-							width: "100%",
-							display: "flex",
-							flexDirection: "row",
-						}}
-					>
+			<div style={styles.visualizationArea} className="visualizationArea">
+				<div style={{ display: "flex", flexDirection: "row" }}>
+					<div style={styles.visTypeSection}>
 						<Selector
-							label={"Trendline Grouping"}
-							selectOptions={trendlineGroupingOptions}
-							value={groupingOption}
-							onChange={setGroupingOption}
+							label={"Visualization Type"}
+							selectOptions={visTypeOptions}
+							value={activeVisType}
+							onChange={setActiveVisType}
 							isDisabled={false}
 						/>
-						<Selector
-							label={"Temporal Granularity"}
-							selectOptions={temporalGranularityOptions}
-							value={granularityOption}
-							onChange={setGranularityOption}
-							isDisabled={false}
-						/>
-						<Selector
-							label={"Minimum Date"}
-							selectOptions={currentDateOptions}
-							value={minDateOption}
-							onChange={setMinDateOption}
-							isDisabled={dateSelectIsDisabled}
-						/>
-						<Selector
-							label={"Maximum Date"}
-							selectOptions={currentDateOptions}
-							value={maxDateOption}
-							onChange={setMaxDateOption}
-							isDisabled={dateSelectIsDisabled}
-						/>
-						<div
-							style={visStlyes.visualizeButton}
-							onClick={handleVisualize}
-						>
-							<div style={visStlyes.visualizeText}>Visualize</div>
-						</div>
+					</div>
+					<div style={styles.parametersSection}>
+						{activeVisType.value === "average" && (
+							<div
+								style={{
+									width: "100%",
+									display: "flex",
+									flexDirection: "row",
+								}}
+							>
+								<Selector
+									label={"Trendline Grouping"}
+									selectOptions={trendlineGroupingOptions}
+									value={groupingOption}
+									onChange={setGroupingOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Temporal Granularity"}
+									selectOptions={temporalGranularityOptions}
+									value={granularityOption}
+									onChange={setGranularityOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Minimum Date"}
+									selectOptions={currentDateOptions}
+									value={minDateOption}
+									onChange={setMinDateOption}
+									isDisabled={dateSelectIsDisabled}
+								/>
+								<Selector
+									label={"Maximum Date"}
+									selectOptions={currentDateOptions}
+									value={maxDateOption}
+									onChange={setMaxDateOption}
+									isDisabled={dateSelectIsDisabled}
+								/>
+								<div
+									style={styles.visualizeButton}
+									onClick={handleVisualize}
+								>
+									<div style={styles.visualizeText}>
+										Visualize
+									</div>
+								</div>
+							</div>
+						)}
+						{activeVisType.value === "difference" && (
+							<div
+								style={{
+									width: "100%",
+									display: "flex",
+									flexDirection: "row",
+								}}
+							>
+								<Selector
+									label={"Trendline 1"}
+									selectOptions={trendlineGroupingOptions}
+									value={groupingOption}
+									onChange={setGroupingOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Trendline 2"}
+									selectOptions={trendlineGroupingOptions}
+									value={groupingOption}
+									onChange={setGroupingOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Temporal Granularity"}
+									selectOptions={temporalGranularityOptions}
+									value={granularityOption}
+									onChange={setGranularityOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Minimum Date"}
+									selectOptions={currentDateOptions}
+									value={minDateOption}
+									onChange={setMinDateOption}
+									isDisabled={dateSelectIsDisabled}
+								/>
+								<Selector
+									label={"Maximum Date"}
+									selectOptions={currentDateOptions}
+									value={maxDateOption}
+									onChange={setMaxDateOption}
+									isDisabled={dateSelectIsDisabled}
+								/>
+								<div
+									style={styles.visualizeButton}
+									onClick={handleVisualize}
+								>
+									<div style={styles.visualizeText}>
+										Visualize
+									</div>
+								</div>
+							</div>
+						)}
 					</div>
 				</div>
 
@@ -216,7 +299,7 @@ const VisualizationScr = () => {
 					<div
 						id="chart-div"
 						style={{
-							...visStlyes.chart,
+							...styles.chart,
 							position: "relative",
 							height: `${height}px`,
 						}}
@@ -224,10 +307,10 @@ const VisualizationScr = () => {
 						{isLoading && <Loading />}
 						<Line data={visualizedData} style={chartStyle} />
 					</div>
-					<div style={visStlyes.sidebar}>
+					<div style={styles.sidebar}>
 						<div
-							style={visStlyes.sidebarInner}
-							className={scrollbarStyles["hideScrollbar"]}
+							style={styles.sidebarInner}
+							className="hideScrollbar"
 						>
 							<div
 								style={{
@@ -300,20 +383,23 @@ const VisualizationScr = () => {
 	);
 };
 
-const visStlyes = {
+const styles = {
 	container: {
 		flex: 1,
 		display: "flex",
 		flexDirection: "column",
 		justifyContent: "center",
 		alignItems: "center",
-		paddingTop: "0.5rem",
+		minHeight: "100vh",
 	},
 	visualizationArea: {
-		width: "75%",
 		display: "flex",
 		flexDirection: "column",
 		marginTop: "3rem",
+		paddingBottom: "3rem",
+		paddingLeft: "1.25rem",
+		paddingRight: "1.25rem",
+		boxSizing: "border-box",
 	},
 	chart: {
 		width: "75%",
@@ -335,6 +421,17 @@ const visStlyes = {
 		width: "100%",
 		flex: "1 1 0",
 		overflow: "auto",
+	},
+	visTypeSection: {
+		backgroundColor: "white",
+		borderRadius: "15px",
+		marginBottom: "1rem",
+		paddingLeft: "0.8rem",
+		paddingRight: "1.3rem",
+		paddingTop: "1.3rem",
+		paddingBottom: "1.3rem",
+		marginRight: "1rem",
+		width: "13%",
 	},
 	parametersSection: {
 		display: "flex",

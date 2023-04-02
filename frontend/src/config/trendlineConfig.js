@@ -44,6 +44,11 @@ export const trendlineColors = [
 	"#6a4c93",
 ];
 
+export const visTypeOptions = [
+	{ value: "average", label: "Average" },
+	{ value: "difference", label: "Difference" },
+];
+
 export const trendlineGroupingOptions = [
 	{ value: "age", label: "Age Group" },
 	{ value: "condition", label: "Condition" },

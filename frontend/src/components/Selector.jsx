@@ -1,6 +1,13 @@
 import Select from "react-select";
 
-const Selector = ({ label, selectOptions, value, onChange, isDisabled }) => {
+const Selector = ({
+	label,
+	selectOptions,
+	value,
+	onChange,
+	isDisabled,
+	defaultValue,
+}) => {
 	return (
 		<div style={styles.parameterContainer}>
 			<div style={styles.parameterLabel}>{label}</div>
@@ -8,6 +15,7 @@ const Selector = ({ label, selectOptions, value, onChange, isDisabled }) => {
 				<Select
 					options={selectOptions}
 					value={value}
+					defaultValue={defaultValue ? defaultValue : null}
 					onChange={onChange}
 					isDisabled={isDisabled}
 				/>
@@ -29,6 +37,9 @@ const styles = {
 		borderRadius: "10px",
 		marginRight: "0.5rem",
 		marginLeft: "0.5rem",
+		display: "flex",
+		flexDirection: "column",
+		justifyContent: "center",
 	},
 	parameterLabel: {
 		fontFamily: "Inter",

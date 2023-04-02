@@ -6,7 +6,11 @@ const Navbar = ({ active }) => {
 			width: "100%",
 			paddingLeft: "1.25rem",
 			paddingRight: "1.25rem",
+			paddingTop: "1rem",
 			boxSizing: "border-box",
+			position: "absolute",
+			top: 0,
+			left: 0,
 		},
 		navbar: {
 			width: "100%",
@@ -49,7 +53,7 @@ const Navbar = ({ active }) => {
 	};
 
 	return (
-		<div style={styles.container}>
+		<div style={styles.container} id="navbar-container">
 			<div style={styles.navbar}>
 				<div
 					style={{

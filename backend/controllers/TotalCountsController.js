@@ -28,8 +28,6 @@ exports.getTotalTupleCounts = async (req, res) => {
 			parseInt(conditionGroupTuples[0].COUNT) +
 			parseInt(conditionTuples[0].COUNT);
 
-		console.log(total);
-
 		return res.status(200).json(total);
 	} catch (err) {
 		console.error(err);

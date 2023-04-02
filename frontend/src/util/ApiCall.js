@@ -1,6 +1,6 @@
 const AveragesApi = require("../api/AveragesApi");
 
-const ApiCall = async (grouping, granularity, minDate, maxDate) => {
+const AverageApiCall = async (grouping, granularity, minDate, maxDate) => {
 	let result;
 
 	switch (grouping) {
@@ -40,5 +40,5 @@ const ApiCall = async (grouping, granularity, minDate, maxDate) => {
 };
 
 module.exports = {
-	ApiCall,
+	AverageApiCall,
 };

@@ -1,0 +1,21 @@
+@media screen and (max-width: 1199px) {
+	.visualizationArea {
+		width: 100%;
+	}
+	html {
+		font-size: 12px;
+	}
+}
+
+@media screen and (min-width: 1200px) {
+	.visualizationArea {
+		width: 90%;
+	}
+}
+
+.hideScrollbar {
+	-ms-overflow-style: none;
+}
+::-webkit-scrollbar {
+	display: none;
+}
