@@ -9,6 +9,7 @@ import {
 	Tooltip,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+
 import {
 	defaultData,
 	trendlineGroupingOptions,
@@ -17,7 +18,11 @@ import {
 	yearlyDateOptions,
 	trendlineColors,
 } from "../config/trendlineConfig";
-import { apiCall } from "../api/VisualizationApi";
+
+import TotalCountsApi from "../api/TotalCountsApi";
+import { ApiCall } from "../util/ApiCall";
+import { UpdateNewActiveTrendlines } from "../util/UpdateNewActiveTrendlines";
+
 import Loading from "../components/Loading";
 import Navbar from "../components/Navbar";
 import Selector from "../components/Selector";
@@ -44,6 +49,7 @@ const VisualizationScr = () => {
 	const [maxDateOption, setMaxDateOption] = useState(null);
 	const [dateSelectIsDisabled, setDateSelectIsDisabled] = useState(true);
 	const [activeTrendlines, setActiveTrendlines] = useState(0);
+	const [totalTuples, setTotalTuples] = useState("...");
 
 	// Handle width, height, and styling for the chart
 	const [width, setWidth] = useState(0);
@@ -62,6 +68,16 @@ const VisualizationScr = () => {
 	const chartStyle = {
 		opacity: isLoading ? 0.25 : 1,
 	};
+
+	// Load total tuple counts on render
+	useEffect(() => {
+		const loadTotalTuples = async () => {
+			const result = await TotalCountsApi.getTotalTupleCount();
+			setTotalTuples(result);
+		};
+
+		loadTotalTuples();
+	}, []);
 
 	// Handle necessary changes for temporal granularity
 	useEffect(() => {
@@ -84,7 +100,7 @@ const VisualizationScr = () => {
 		setVisualizedData(defaultData);
 		setAllData(null);
 
-		const result = await apiCall(
+		const result = await ApiCall(
 			groupingOption.value,
 			granularityOption.value,
 			minDateOption.value,
@@ -126,54 +142,14 @@ const VisualizationScr = () => {
 	};
 
 	const handleTrendlineSelectorClicked = (id) => {
-		const targetSelector = allData.filter((item) => item.id === id)[0];
-
-		if (targetSelector.active) {
-			setActiveTrendlines(activeTrendlines - 1);
-			targetSelector.active = false;
-		} else {
-			setActiveTrendlines(activeTrendlines + 1);
-			targetSelector.active = true;
-		}
-
-		// Replace target selector with its replaced version
-		let newAllData = allData;
-		newAllData.map((item) => {
-			return item.id === id ? targetSelector : item;
-		});
-
-		// Remap trendline colors based on what is now active
-		let activeCount = 0;
-		newAllData.map((item) => {
-			if (item.active) {
-				item.color = trendlineColors[activeCount];
-				activeCount++;
-			}
-
-			return item;
-		});
-
-		let newDatasets = [];
-		newAllData.forEach((item) => {
-			if (item.active) {
-				const newDataset = {
-					label: item.name,
-					data: item.values,
-					borderColor: item.color,
-					backgroundColor: item.color,
-				};
-
-				newDatasets.push(newDataset);
-			}
-		});
-
-		const newVisualizedData = {
-			labels: newAllData[0].labels,
-			datasets: newDatasets,
-		};
-
-		setAllData(newAllData);
-		setVisualizedData(newVisualizedData);
+		const updatedData = UpdateNewActiveTrendlines(
+			id,
+			allData,
+			activeTrendlines
+		);
+		setAllData(updatedData.newAllData);
+		setActiveTrendlines(updatedData.newActiveTrendlines);
+		setVisualizedData(updatedData.newVisualizedData);
 	};
 
 	return (
@@ -261,6 +237,16 @@ const VisualizationScr = () => {
 							>
 								Active Trendlines
 							</div>
+							{!allData && (
+								<TrendlineSelector
+									id={null}
+									label={"No Data Loaded"}
+									active={false}
+									color={null}
+									disabledIfInactive={false}
+									handleOnClick={() => {}}
+								/>
+							)}
 							{allData &&
 								allData.map((item) => (
 									<TrendlineSelector
@@ -277,6 +263,31 @@ const VisualizationScr = () => {
 										}
 									/>
 								))}
+							<div
+								style={{
+									fontFamily: "Inter",
+									fontSize: "0.9rem",
+									fontWeight: "600",
+									textAlign: "start",
+									marginTop: "2rem",
+									marginBottom: "0.3rem",
+									color: "#363636",
+								}}
+							>
+								Total Tuples
+							</div>
+							<div
+								style={{
+									fontFamily: "Inter",
+									fontSize: "1.3rem",
+									fontWeight: "800",
+									textAlign: "start",
+									marginBottom: "0.5rem",
+									color: "#3a5a40 ",
+								}}
+							>
+								{totalTuples}
+							</div>
 						</div>
 					</div>
 				</div>
