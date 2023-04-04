@@ -9,9 +9,6 @@ exports.getDiffDataMonthly = async (req, res) => {
     const minDateParts = req.params.min.split("_");
     const maxDateParts = req.params.max.split("_");
 
-    console.log(group1Parts);
-    console.log(group2Parts);
-
     // Format the date range WHERE clause based on the years
     let dateRangeClause;
     switch (parseInt(maxDateParts[1]) - parseInt(minDateParts[1])) {
@@ -111,10 +108,6 @@ exports.getDiffDataMonthly = async (req, res) => {
       HAVING ${group2Parts[0]}.name = '${group2Parts[1]}'
       ORDER BY year, month
     `);
-
-    console.log(diffResult);
-    console.log(group1Result);
-    console.log(group2Result);
 
     const diffData = await reformatData(
       diffResult,
