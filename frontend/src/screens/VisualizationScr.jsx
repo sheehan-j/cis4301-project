@@ -20,11 +20,14 @@ import {
 	yearlyDateOptions,
 	trendlineColors,
 	visTypeOptions,
+	diffTrendlineOptions,
 } from "../config/trendlineConfig";
 
 // Util/APIs
 import TotalCountsApi from "../api/TotalCountsApi";
 import { AverageApiCall } from "../util/ApiCall";
+import { VisualizeData } from "../util/VisualizeData";
+import DiffApi from "../api/DiffApi";
 import { UpdateNewActiveTrendlines } from "../util/UpdateNewActiveTrendlines";
 
 // Components/styling
@@ -49,6 +52,8 @@ const VisualizationScr = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [activeVisType, setActiveVisType] = useState(visTypeOptions[0]);
 	const [groupingOption, setGroupingOption] = useState(null);
+	const [diffTrendline1Option, setDiffTrendline1Option] = useState(null);
+	const [diffTrendline2Option, setDiffTrendline2Option] = useState(null);
 	const [granularityOption, setGranularityOption] = useState(null);
 	const [currentDateOptions, setCurrentDateOptions] = useState(null);
 	const [minDateOption, setMinDateOption] = useState(null);
@@ -105,13 +110,23 @@ const VisualizationScr = () => {
 		}
 	}, [granularityOption]);
 
+	// Clear selector fields on visualization type change
+	useEffect(() => {
+		setGroupingOption(null);
+		setGranularityOption(null);
+		setMinDateOption(null);
+		setMaxDateOption(null);
+		setDiffTrendline1Option(null);
+		setDiffTrendline2Option(null);
+	}, [activeVisType]);
+
 	const handleVisualize = async () => {
 		setIsLoading(true);
 		setVisualizedData(defaultData);
 		setAllData(null);
 
 		let result;
-
+		let formattedData;
 		switch (activeVisType.value) {
 			case "average":
 				result = await AverageApiCall(
@@ -120,43 +135,28 @@ const VisualizationScr = () => {
 					minDateOption.value,
 					maxDateOption.value
 				);
+
+				formattedData = await VisualizeData("average", result);
+				break;
+			case "difference":
+				result = await DiffApi.getDiffData(
+					diffTrendline1Option.value,
+					diffTrendline2Option.value,
+					granularityOption.value,
+					minDateOption.value,
+					maxDateOption.value
+				);
+
+				formattedData = await VisualizeData("difference", result);
 				break;
 			default:
 				alert("Error in visualization handler.");
 				break;
 		}
 
-		// Add an attribute to track whether
-		// each trendline is being visualized
-		result.map((item, index) => {
-			item.active = index <= 4;
-			item.id = index;
-			item.color = trendlineColors[index];
-			return item;
-		});
-
-		const datasets = [];
-		result.forEach((item) => {
-			if (item.active) {
-				const newDataset = {
-					label: item.name,
-					data: item.values,
-					borderColor: item.color,
-					backgroundColor: item.color,
-				};
-
-				datasets.push(newDataset);
-			}
-		});
-
-		const data = {
-			labels: result[0].labels,
-			datasets: datasets,
-		};
-
-		setActiveTrendlines(5);
-		setVisualizedData(data);
-		setAllData(result);
+		setActiveTrendlines(formattedData.activeTrendlines);
+		setVisualizedData(formattedData.visualizedData);
+		setAllData(formattedData.allData);
 		setIsLoading(false);
 	};
 
@@ -243,16 +243,16 @@ const VisualizationScr = () => {
 							>
 								<Selector
 									label={"Trendline 1"}
-									selectOptions={trendlineGroupingOptions}
-									value={groupingOption}
-									onChange={setGroupingOption}
+									selectOptions={diffTrendlineOptions}
+									value={diffTrendline1Option}
+									onChange={setDiffTrendline1Option}
 									isDisabled={false}
 								/>
 								<Selector
 									label={"Trendline 2"}
-									selectOptions={trendlineGroupingOptions}
-									value={groupingOption}
-									onChange={setGroupingOption}
+									selectOptions={diffTrendlineOptions}
+									value={diffTrendline2Option}
+									onChange={setDiffTrendline2Option}
 									isDisabled={false}
 								/>
 								<Selector

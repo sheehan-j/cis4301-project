@@ -11,8 +11,9 @@ exports.getStateDataMonthly = async (req, res) => {
 
 		// Format the date range WHERE clause based on the years
 		let dateRangeClause;
-		if (minDateParts[1] === maxDateParts[1]) {
-			dateRangeClause = `
+		switch (parseInt(maxDateParts[1]) - parseInt(minDateParts[1])) {
+			case 0:
+				dateRangeClause = `
           WHERE 
             (year = ${minDateParts[1]})
             AND
@@ -20,18 +21,17 @@ exports.getStateDataMonthly = async (req, res) => {
             AND
             (month <= ${maxDateParts[0]})
         `;
-		} else if (
-			parseInt(minDateParts[1]) ===
-			parseInt(maxDateParts[1]) + 1
-		) {
-			dateRangeClause = `
+				break;
+			case 1:
+				dateRangeClause = `
           WHERE 
             (year = ${minDateParts[1]} AND month >= ${minDateParts[0]})
             OR
             (year = ${maxDateParts[1]} AND month <= ${maxDateParts[0]})
         `;
-		} else {
-			dateRangeClause = `
+				break;
+			default:
+				dateRangeClause = `
           WHERE 
             (year = ${minDateParts[1]} AND month >= ${minDateParts[0]})
             OR 

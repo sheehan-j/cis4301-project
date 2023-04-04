@@ -11,6 +11,7 @@ const AvgByStateController = require("./controllers/AvgByStateController");
 const AvgByConditionController = require("./controllers/AvgByConditionController");
 const AvgByConditionGroupController = require("./controllers/AvgByConditionGroupController");
 const TotalCountsController = require("./controllers/TotalCountsController");
+const DiffController = require("./controllers/DiffController");
 
 // Configure middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -54,6 +55,10 @@ router
 router
 	.route("/state/yearly/:min/:max")
 	.get(AvgByStateController.getStateDataYearly);
+
+router
+	.route("/difference/monthly/:group1/:group2/:min/:max")
+	.get(DiffController.getDiffDataMonthly);
 
 router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
 

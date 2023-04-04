@@ -6,7 +6,7 @@ const Selector = ({
 	value,
 	onChange,
 	isDisabled,
-	defaultValue,
+	isSearchable,
 }) => {
 	return (
 		<div style={styles.parameterContainer}>
@@ -15,7 +15,6 @@ const Selector = ({
 				<Select
 					options={selectOptions}
 					value={value}
-					defaultValue={defaultValue ? defaultValue : null}
 					onChange={onChange}
 					isDisabled={isDisabled}
 				/>
