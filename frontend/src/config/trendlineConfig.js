@@ -60,7 +60,7 @@ export const diffTrendlineOptions = [
 	{
 		label: "Age Groups",
 		options: [
-			{ value: "AgeGroup_all", label: "All Age Groups" },
+			{ value: "AgeGroup_All Ages", label: "All Age Groups" },
 			{ value: "AgeGroup_0-24", label: "0-24" },
 			{ value: "AgeGroup_25-34", label: "25-34" },
 			{ value: "AgeGroup_35-44", label: "35-44" },
@@ -75,10 +75,6 @@ export const diffTrendlineOptions = [
 	{
 		label: "Conditions",
 		options: [
-			{
-				value: "Condition_all",
-				label: "All Conditions",
-			},
 			{
 				value: "Condition_Adult respiratory distress syndrome",
 				label: "Adult respiratory distress syndrome",
@@ -156,10 +152,6 @@ export const diffTrendlineOptions = [
 		label: "Condition Groups",
 		options: [
 			{
-				value: "ConditionGroup_all",
-				label: "All Condition Groups",
-			},
-			{
 				value: "ConditionGroup_All other conditions and causes (residual)",
 				label: "All other conditions and causes (residual)",
 			},
@@ -197,7 +189,6 @@ export const diffTrendlineOptions = [
 	{
 		label: "States",
 		options: [
-			{ value: "State_all", label: "All States" },
 			{ value: "State_Alabama", label: "Alabama" },
 			{ value: "State_Alaska", label: "Alaska" },
 			{ value: "State_Arizona", label: "Arizona" },
