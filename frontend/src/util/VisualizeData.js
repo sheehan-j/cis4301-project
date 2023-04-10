@@ -6,6 +6,8 @@ const VisualizeData = async (type, dataFromApi) => {
 		activeTrendlinesLimit = 5;
 	} else if (type === "difference") {
 		activeTrendlinesLimit = 1;
+	} else if (type === "maximal") {
+		activeTrendlinesLimit = 1;
 	}
 
 	// Add an attribute to track whether

@@ -12,6 +12,7 @@ const AvgByConditionController = require("./controllers/AvgByConditionController
 const AvgByConditionGroupController = require("./controllers/AvgByConditionGroupController");
 const TotalCountsController = require("./controllers/TotalCountsController");
 const DiffController = require("./controllers/DiffController");
+const MaxController = require("./controllers/MaxController");
 
 // Configure middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,45 +21,50 @@ app.use(morgan("dev"));
 
 // Configure allowed options for router
 router.use(function (req, res, next) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-	res.setHeader(
-		"Access-Control-Allow-Headers",
-		"X-Requested-With,content-type"
-	);
-	res.setHeader("Access-Control-Allow-Credentials", true);
-	next();
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
 });
 
 // Routes
 router
-	.route("/age-group/monthly/:min/:max")
-	.get(AvgByAgeController.getAgeGroupDataMonthly);
+  .route("/age-group/monthly/:min/:max")
+  .get(AvgByAgeController.getAgeGroupDataMonthly);
 router
-	.route("/age-group/yearly/:min/:max")
-	.get(AvgByAgeController.getAgeGroupDataYearly);
+  .route("/age-group/yearly/:min/:max")
+  .get(AvgByAgeController.getAgeGroupDataYearly);
 router
-	.route("/condition/monthly/:min/:max")
-	.get(AvgByConditionController.getConditionDataMonthly);
+  .route("/condition/monthly/:min/:max")
+  .get(AvgByConditionController.getConditionDataMonthly);
 router
-	.route("/condition/yearly/:min/:max")
-	.get(AvgByConditionController.getConditionDataYearly);
+  .route("/condition/yearly/:min/:max")
+  .get(AvgByConditionController.getConditionDataYearly);
 router
-	.route("/condition-group/monthly/:min/:max")
-	.get(AvgByConditionGroupController.getConditionGroupDataMonthly);
+  .route("/condition-group/monthly/:min/:max")
+  .get(AvgByConditionGroupController.getConditionGroupDataMonthly);
 router
-	.route("/condition-group/yearly/:min/:max")
-	.get(AvgByConditionGroupController.getConditionGroupDataYearly);
+  .route("/condition-group/yearly/:min/:max")
+  .get(AvgByConditionGroupController.getConditionGroupDataYearly);
 router
-	.route("/state/monthly/:min/:max")
-	.get(AvgByStateController.getStateDataMonthly);
+  .route("/state/monthly/:min/:max")
+  .get(AvgByStateController.getStateDataMonthly);
 router
-	.route("/state/yearly/:min/:max")
-	.get(AvgByStateController.getStateDataYearly);
+  .route("/state/yearly/:min/:max")
+  .get(AvgByStateController.getStateDataYearly);
+
+// TODO: Add yearly option for differnece
+router
+  .route("/difference/monthly/:group1/:group2/:min/:max")
+  .get(DiffController.getDiffDataMonthly);
 
 router
-	.route("/difference/monthly/:group1/:group2/:min/:max")
-	.get(DiffController.getDiffDataMonthly);
+  .route("/max/monthly/:group/:min/:max")
+  .get(MaxController.getMaxDataMonthly);
 
 router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
 

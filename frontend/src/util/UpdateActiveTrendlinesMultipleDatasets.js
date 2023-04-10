@@ -1,6 +1,10 @@
 const trendlineConfig = require("../config/trendlineConfig");
 
-const UpdateNewActiveTrendlines = (id, allData, activeTrendlines) => {
+const UpdateActiveTrendlinesMultipleDatasets = (
+	id,
+	allData,
+	activeTrendlines
+) => {
 	const targetSelector = allData.filter((item) => item.id === id)[0];
 
 	if (targetSelector.active) {
@@ -35,6 +39,7 @@ const UpdateNewActiveTrendlines = (id, allData, activeTrendlines) => {
 				data: item.values,
 				borderColor: item.color,
 				backgroundColor: item.color,
+				yAxisID: item.yAxisID !== null ? item.yAxisID : null,
 			};
 
 			newDatasets.push(newDataset);
@@ -54,5 +59,5 @@ const UpdateNewActiveTrendlines = (id, allData, activeTrendlines) => {
 };
 
 module.exports = {
-	UpdateNewActiveTrendlines,
+	UpdateActiveTrendlinesMultipleDatasets,
 };

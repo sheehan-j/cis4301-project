@@ -18,7 +18,6 @@ import {
 	temporalGranularityOptions,
 	monthlyDateOptions,
 	yearlyDateOptions,
-	trendlineColors,
 	visTypeOptions,
 	diffTrendlineOptions,
 } from "../config/trendlineConfig";
@@ -27,8 +26,10 @@ import {
 import TotalCountsApi from "../api/TotalCountsApi";
 import { AverageApiCall } from "../util/ApiCall";
 import { VisualizeData } from "../util/VisualizeData";
+import VisualizeMultipleDatasets from "../util/VisualizeMultipleDatasets";
 import DiffApi from "../api/DiffApi";
-import { UpdateNewActiveTrendlines } from "../util/UpdateNewActiveTrendlines";
+import MaxApi from "../api/MaxApi";
+import { UpdateActiveTrendlines } from "../util/UpdateActiveTrendlines";
 
 // Components/styling
 import Loading from "../components/Loading";
@@ -60,7 +61,36 @@ const VisualizationScr = () => {
 	const [maxDateOption, setMaxDateOption] = useState(null);
 	const [dateSelectIsDisabled, setDateSelectIsDisabled] = useState(true);
 	const [activeTrendlines, setActiveTrendlines] = useState(0);
+	const [legend, setLegend] = useState(null);
 	const [totalTuples, setTotalTuples] = useState("...");
+
+	// Configure chart to change to multiaxis when necessary
+	const options = {
+		responsive: true,
+		interaction: {
+			mode: activeVisType.value === "maximal" ? "index" : "point",
+			intersect: false,
+		},
+		stacked: false,
+		scales: {
+			y: {
+				type: "linear",
+				display: true,
+				position: "left",
+			},
+			y1: {
+				type: "linear",
+				display: activeVisType.value === "maximal",
+				position: "right",
+				grid: {
+					drawOnChartArea: false,
+				},
+				ticks: {
+					stepSize: 1,
+				},
+			},
+		},
+	};
 
 	// Handle width, height, and styling for the chart
 	const [width, setWidth] = useState(0);
@@ -110,8 +140,13 @@ const VisualizationScr = () => {
 		}
 	}, [granularityOption]);
 
-	// Clear selector fields on visualization type change
+	// Clear fields on visualization type change
 	useEffect(() => {
+		setVisualizedData(defaultData);
+		setAllData(null);
+		setActiveTrendlines(0);
+		setDiffTrendline1Option(null);
+		setDiffTrendline2Option(null);
 		setGroupingOption(null);
 		setGranularityOption(null);
 		setMinDateOption(null);
@@ -124,6 +159,8 @@ const VisualizationScr = () => {
 		setIsLoading(true);
 		setVisualizedData(defaultData);
 		setAllData(null);
+		setLegend(null);
+		setActiveTrendlines(0);
 
 		let result;
 		let formattedData;
@@ -149,6 +186,17 @@ const VisualizationScr = () => {
 
 				formattedData = await VisualizeData("difference", result);
 				break;
+			case "maximal":
+				result = await MaxApi.getMaxData(
+					groupingOption.value,
+					granularityOption.value,
+					minDateOption.value,
+					maxDateOption.value
+				);
+
+				formattedData = await VisualizeMultipleDatasets(result);
+				setLegend(formattedData.legend);
+				break;
 			default:
 				alert("Error in visualization handler.");
 				break;
@@ -161,7 +209,7 @@ const VisualizationScr = () => {
 	};
 
 	const handleTrendlineSelectorClicked = (id) => {
-		const updatedData = UpdateNewActiveTrendlines(
+		const updatedData = UpdateActiveTrendlines(
 			id,
 			allData,
 			activeTrendlines
@@ -187,7 +235,8 @@ const VisualizationScr = () => {
 						/>
 					</div>
 					<div style={styles.parametersSection}>
-						{activeVisType.value === "average" && (
+						{(activeVisType.value === "average" ||
+							activeVisType.value === "maximal") && (
 							<div
 								style={{
 									width: "100%",
@@ -305,23 +354,18 @@ const VisualizationScr = () => {
 						}}
 					>
 						{isLoading && <Loading />}
-						<Line data={visualizedData} style={chartStyle} />
+						<Line
+							data={visualizedData}
+							style={chartStyle}
+							options={options}
+						/>
 					</div>
 					<div style={styles.sidebar}>
 						<div
-							style={styles.sidebarInner}
+							style={styles.sidebarLabel}
 							className="hideScrollbar"
 						>
-							<div
-								style={{
-									fontFamily: "Inter",
-									fontSize: "0.9rem",
-									fontWeight: "600",
-									textAlign: "start",
-									marginBottom: "0.5rem",
-									color: "#363636",
-								}}
-							>
+							<div style={styles.sidebarLabel}>
 								Active Trendlines
 							</div>
 							{!allData && (
@@ -350,15 +394,32 @@ const VisualizationScr = () => {
 										}
 									/>
 								))}
+							{legend && (
+								<div
+									style={{
+										...styles.sidebarLabel,
+										marginTop: "2rem",
+									}}
+								>
+									Legend
+									{legend.map((item) => (
+										<div
+											style={{
+												marginTop: "0.3rem",
+												marginBottom: "0.3rem",
+												fontWeight: "400",
+												fontSize: "0.85rem",
+											}}
+										>
+											{item.key} - {item.value}
+										</div>
+									))}
+								</div>
+							)}
 							<div
 								style={{
-									fontFamily: "Inter",
-									fontSize: "0.9rem",
-									fontWeight: "600",
-									textAlign: "start",
-									marginTop: "2rem",
-									marginBottom: "0.3rem",
-									color: "#363636",
+									...styles.sidebarLabel,
+									marginTop: "2rem  ",
 								}}
 							>
 								Total Tuples
@@ -466,6 +527,14 @@ const styles = {
 		color: "white",
 		fontWeight: "600",
 		fontSize: "1.05rem",
+	},
+	sidebarLabel: {
+		fontFamily: "Inter",
+		fontSize: "0.9rem",
+		fontWeight: "600",
+		textAlign: "start",
+		marginBottom: "0.3rem",
+		color: "#363636",
 	},
 };
 

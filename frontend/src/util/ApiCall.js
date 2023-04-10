@@ -4,7 +4,7 @@ const AverageApiCall = async (grouping, granularity, minDate, maxDate) => {
 	let result;
 
 	switch (grouping) {
-		case "age":
+		case "agegroup":
 			result = await AveragesApi.getDataByAgeGroup(
 				granularity,
 				minDate,

@@ -42,6 +42,7 @@ const TrendlineSelector = ({
 			<div
 				style={{
 					fontFamily: "Inter",
+					fontWeight: "400",
 					fontSize: "0.8rem",
 					marginLeft: "0.3rem",
 					textAlign: "start",

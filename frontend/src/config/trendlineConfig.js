@@ -24,15 +24,17 @@ export const defaultData = {
 };
 
 export const chartOptions = {
-	scales: {
-		yAxes: [
-			{
-				scaleLabel: {
-					display: true,
-					labelString: "My Y-Axis Label",
-				},
+	tooltips: {
+		callbacks: {
+			title: function (tooltipItem, data) {
+				return tooltipItem[0].xLabel;
 			},
-		],
+			label: function (tooltipItem, data) {
+				const dataset = data.datasets[tooltipItem.datasetIndex];
+				const dataItem = dataset.data[tooltipItem.index];
+				return `${dataset.label}: ${dataItem.y}, ${dataItem.info}`;
+			},
+		},
 	},
 };
 
@@ -47,10 +49,11 @@ export const trendlineColors = [
 export const visTypeOptions = [
 	{ value: "average", label: "Average" },
 	{ value: "difference", label: "Difference" },
+	{ value: "maximal", label: "Maximal" },
 ];
 
 export const trendlineGroupingOptions = [
-	{ value: "age", label: "Age Group" },
+	{ value: "agegroup", label: "Age Group" },
 	{ value: "condition", label: "Condition" },
 	{ value: "conditiongroup", label: "Condition Group" },
 	{ value: "state", label: "State" },
