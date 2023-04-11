@@ -118,6 +118,12 @@ const VisualizationScr = () => {
 	useEffect(() => {
 		const loadTotalTuples = async () => {
 			const result = await TotalCountsApi.getTotalTupleCount();
+			if (result.error !== undefined) {
+				alert(
+					"ERROR! Unable to establish connection to DB. You likely need to turn on your VPN."
+				);
+				return;
+			}
 			setTotalTuples(result);
 		};
 

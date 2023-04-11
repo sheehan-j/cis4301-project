@@ -65,6 +65,9 @@ router
 router
   .route("/max/monthly/:group/:min/:max")
   .get(MaxController.getMaxDataMonthly);
+router
+  .route("/max/yearly/:group/:min/:max")
+  .get(MaxController.getMaxDataYearly);
 
 router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
 
