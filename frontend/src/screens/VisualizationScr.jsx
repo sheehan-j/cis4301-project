@@ -28,7 +28,7 @@ import { AverageApiCall } from "../util/ApiCall";
 import { VisualizeData } from "../util/VisualizeData";
 import VisualizeMultipleDatasets from "../util/VisualizeMultipleDatasets";
 import DiffApi from "../api/DiffApi";
-import MaxApi from "../api/MaxApi";
+import MinMaxApi from "../api/MinMaxApi";
 import { UpdateActiveTrendlines } from "../util/UpdateActiveTrendlines";
 
 // Components/styling
@@ -84,7 +84,9 @@ const VisualizationScr = () => {
 			},
 			y1: {
 				type: "linear",
-				display: activeVisType.value === "maximal",
+				display:
+					activeVisType.value === "maximal" ||
+					activeVisType.value === "minimal",
 				position: "right",
 				grid: {
 					drawOnChartArea: false,
@@ -101,10 +103,6 @@ const VisualizationScr = () => {
 	const [navbarHeight, setNavbarHeight] = useState(0);
 	useEffect(() => {
 		const handleResize = () => {
-			// const chartDiv = document.getElementById("chart-div");
-			// const navbar = document.getElementById("navbar-container");
-			// const newWidth = chartDiv.offsetWidth;
-			// const newHeight = navbar.offsetHeight;
 			setWidth(document.getElementById("chart-div").offsetWidth);
 			setNavbarHeight(
 				document.getElementById("navbar-container").offsetHeight
@@ -156,6 +154,7 @@ const VisualizationScr = () => {
 		switch (activeVisType.value) {
 			case "average":
 			case "maximal":
+			case "minimal":
 				setVisualizeButtonIsDisabled(
 					!groupingOption ||
 						!granularityOption ||
@@ -235,6 +234,7 @@ const VisualizationScr = () => {
 				formattedData = await VisualizeData("difference", result);
 				break;
 			case "maximal":
+			case "minimal":
 				// Process the curent excluded options
 				const excludedValuesArr = [];
 				let excludedValues = "";
@@ -245,8 +245,9 @@ const VisualizationScr = () => {
 					excludedValues = excludedValuesArr.join(",");
 				}
 
-				result = await MaxApi.getMaxData(
+				result = await MinMaxApi.getMinMaxData(
 					groupingOption.value,
+					activeVisType.value === "maximal" ? "max" : "min",
 					granularityOption.value,
 					minDateOption.value,
 					maxDateOption.value,
@@ -302,7 +303,8 @@ const VisualizationScr = () => {
 							}}
 						>
 							{(activeVisType.value === "average" ||
-								activeVisType.value === "maximal") && (
+								activeVisType.value === "maximal" ||
+								activeVisType.value === "minimal") && (
 								<>
 									<Selector
 										label={"Trendline Grouping"}
@@ -462,7 +464,8 @@ const VisualizationScr = () => {
 										}
 									/>
 								))}
-							{activeVisType.value === "maximal" && (
+							{(activeVisType.value === "maximal" ||
+								activeVisType.value === "minimal") && (
 								<>
 									<div
 										style={{

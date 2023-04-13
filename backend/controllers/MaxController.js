@@ -1,7 +1,7 @@
 const executeQuery = require("../util/executeQuery");
 const translateLabels = require("../util/translateLabels");
 
-exports.getMaxDataMonthly = async (req, res) => {
+exports.getMinMaxDataMonthly = async (req, res) => {
   try {
     const minDateParts = req.params.min.split("_");
     const maxDateParts = req.params.max.split("_");
@@ -64,25 +64,25 @@ exports.getMaxDataMonthly = async (req, res) => {
         ${excludedValuesClause}
         GROUP BY year, month, ${req.params.group}
       )
-      SELECT max1.year, max1.month, g.name, max1.deaths
+      SELECT d1.year, d1.month, g.name, d1.deaths
       FROM (
-          SELECT avg.year, avg.month, avg.${req.params.group}, max2.deaths
+          SELECT avg.year, avg.month, avg.${req.params.group}, d2.deaths
           FROM avg_deaths avg
           JOIN (
-              SELECT year, month, max(deaths) as deaths
+              SELECT year, month, ${req.params.type}(deaths) as deaths
               FROM avg_deaths
               GROUP BY year, month
-          ) max2 
-          ON (avg.year = max2.year
-              AND avg.month = max2.month
-              AND avg.deaths = max2.deaths)
-      ) max1
-      JOIN ${req.params.group} g ON max1.${req.params.group} = g.id
+          ) d2 
+          ON (avg.year = d2.year
+              AND avg.month = d2.month
+              AND avg.deaths = d2.deaths)
+      ) d1
+      JOIN ${req.params.group} g ON d1.${req.params.group} = g.id
       ${dateRangeClause}
-      ORDER BY max1.year, max1.month
+      ORDER BY d1.year, d1.month
     `);
 
-    const result = formatMaxDataResult(queryResult, "MONTH");
+    const result = formatDataResult(queryResult, "MONTH");
 
     result[0]["labels"] = translateLabels(result[0]["labels"]);
     result[1]["labels"] = translateLabels(result[1]["labels"]);
@@ -94,7 +94,7 @@ exports.getMaxDataMonthly = async (req, res) => {
   }
 };
 
-exports.getMaxDataYearly = async (req, res) => {
+exports.getMinMaxDataYearly = async (req, res) => {
   const queryResult = await executeQuery(`
       WITH avg_deaths AS (
         SELECT DISTINCT year, ${req.params.group}, avg(deaths) as deaths
@@ -109,30 +109,30 @@ exports.getMaxDataYearly = async (req, res) => {
         AND cg.name <> 'COVID-19'
         GROUP BY year, ${req.params.group}
       )
-      SELECT max1.year, g.name, max1.deaths
+      SELECT d1.year, g.name, d1.deaths
       FROM (
-          SELECT avg.year, avg.${req.params.group}, max2.deaths
+          SELECT avg.year, avg.${req.params.group}, d2.deaths
           FROM avg_deaths avg
           JOIN (
-              SELECT year, max(deaths) as deaths
+              SELECT year, ${req.params.type}(deaths) as deaths
               FROM avg_deaths
               GROUP BY year
-          ) max2 
-          ON (avg.year = max2.year
-              AND avg.deaths = max2.deaths)
-      ) max1
-      JOIN ${req.params.group} g ON max1.${req.params.group} = g.id
-      WHERE max1.year >= ${req.params.min}
-      AND max1.year <= ${req.params.max}
-      ORDER BY max1.year
+          ) d2 
+          ON (avg.year = d2.year
+              AND avg.deaths = d2.deaths)
+      ) d1
+      JOIN ${req.params.group} g ON d1.${req.params.group} = g.id
+      WHERE d1.year >= ${req.params.min}
+      AND d1.year <= ${req.params.max}
+      ORDER BY d1.year
     `);
 
-  const result = formatMaxDataResult(queryResult, "YEAR");
+  const result = formatDataResult(queryResult, "YEAR");
 
   return res.status(200).json(result);
 };
 
-const formatMaxDataResult = (queryResult, granularity) => {
+const formatDataResult = (queryResult, granularity) => {
   // Set up arrays for data
   let labels = [];
   let values = [];
@@ -142,9 +142,9 @@ const formatMaxDataResult = (queryResult, granularity) => {
     // Check if there is multiple values for a specific month/year, meaning that there are two values that tied for the max for one month/year
     if (labels[labels.length - 1] === item[granularity]) {
       // Get the value of the last item in the group array, which is one of the groups that has tied
-      const maxGroup1 = group[group.length - 1];
+      const group1 = group[group.length - 1];
       // Change the value to a combination of the two tied groups
-      group[group.length - 1] = `${maxGroup1}, ${item.NAME}`;
+      group[group.length - 1] = `${group1}, ${item.NAME}`;
     } else {
       labels.push(item[granularity]);
       values.push(item.DEATHS);

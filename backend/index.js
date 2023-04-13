@@ -65,11 +65,11 @@ router
   .get(DiffController.getDiffDataYearly);
 
 router
-  .route("/max/monthly/:group/:min/:max")
-  .get(MaxController.getMaxDataMonthly);
+  .route("/minmax/monthly/:type/:group/:min/:max")
+  .get(MaxController.getMinMaxDataMonthly);
 router
-  .route("/max/yearly/:group/:min/:max")
-  .get(MaxController.getMaxDataYearly);
+  .route("/minxmax/yearly/:type/:group/:min/:max")
+  .get(MaxController.getMinMaxDataYearly);
 
 router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
 

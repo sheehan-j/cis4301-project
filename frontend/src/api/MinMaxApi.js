@@ -1,11 +1,12 @@
-const getMaxData = async (
+const getMinMaxData = async (
 	group,
+	type,
 	granularity,
 	minDate,
 	maxDate,
 	excludedValues
 ) => {
-	let API_URL = `http://localhost:8089/api/max/${granularity}/${group}/${minDate}/${maxDate}`;
+	let API_URL = `http://localhost:8089/api/minmax/${granularity}/${type}/${group}/${minDate}/${maxDate}`;
 
 	if (excludedValues !== "") {
 		API_URL += `?excludedValues=${excludedValues}`;
@@ -22,5 +23,5 @@ const getMaxData = async (
 };
 
 module.exports = {
-	getMaxData,
+	getMinMaxData,
 };
