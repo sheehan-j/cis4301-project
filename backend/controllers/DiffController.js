@@ -42,37 +42,37 @@ exports.getDiffDataMonthly = async (req, res) => {
     }
 
     const diffResult = await executeQuery(`
-      SELECT 
+      SELECT
         g1.year,
         g1.month,
         'Difference' as difference,
         ABS(g1.deaths - g2.deaths) AS deaths
-      FROM 
+      FROM
         (
-          SELECT 
+          SELECT
             d.year,
             d.month,
-            ${group1Parts[0]}.name AS ${group1Parts[0]},
+            g.name AS ${group1Parts[0]},
             AVG(deaths) as deaths
           FROM JORDANSHEEHAN.Deaths d
-          JOIN JORDANSHEEHAN.${group1Parts[0]} 
-            ON d.${group1Parts[0]} = ${group1Parts[0]}.id
+          JOIN JORDANSHEEHAN.${group1Parts[0]} g
+            ON d.${group1Parts[0]} = g.id
           ${dateRangeClause}
-          GROUP BY year, month, ${group2Parts[0]}.name
-          HAVING ${group1Parts[0]}.name = '${group1Parts[1]}'
+          GROUP BY year, month, g.name
+          HAVING g.name = '${group1Parts[1]}'
         ) g1,
         (
-          SELECT 
+          SELECT
             d.year,
             d.month,
-            ${group2Parts[0]}.name AS ${group2Parts[0]},
+            g.name AS ${group2Parts[0]},
             AVG(deaths) as deaths
           FROM JORDANSHEEHAN.Deaths d
-          JOIN JORDANSHEEHAN.${group2Parts[0]} 
-            ON d.${group2Parts[0]} = ${group2Parts[0]}.id
+          JOIN JORDANSHEEHAN.${group2Parts[0]} g
+            ON d.${group2Parts[0]} = g.id
           ${dateRangeClause}
-          GROUP BY year, month, ${group2Parts[0]}.name
-          HAVING ${group2Parts[0]}.name = '${group2Parts[1]}'
+          GROUP BY year, month, g.name
+          HAVING g.name = '${group2Parts[1]}'
         ) g2
       WHERE g1.year = g2.year
       AND g1.month = g2.month
@@ -80,32 +80,32 @@ exports.getDiffDataMonthly = async (req, res) => {
     `);
 
     const group1Result = await executeQuery(`
-      SELECT 
+      SELECT
         d.year,
         d.month,
-        ${group1Parts[0]}.name AS LABEL,
+        g.name AS LABEL,
         AVG(deaths) as deaths
       FROM JORDANSHEEHAN.Deaths d
-      JOIN JORDANSHEEHAN.${group1Parts[0]} 
-        ON d.${group1Parts[0]} = ${group1Parts[0]}.id
+      JOIN JORDANSHEEHAN.${group1Parts[0]} g
+        ON d.${group1Parts[0]} = g.id
       ${dateRangeClause}
-      GROUP BY year, month, ${group1Parts[0]}.name
-      HAVING ${group1Parts[0]}.name = '${group1Parts[1]}'
+      GROUP BY year, month, g.name
+      HAVING g.name = '${group1Parts[1]}'
       ORDER BY year, month
     `);
 
     const group2Result = await executeQuery(`
-      SELECT 
+      SELECT
         d.year,
         d.month,
-        ${group2Parts[0]}.name AS LABEL,
+        g.name AS LABEL,
         AVG(deaths) as deaths
       FROM JORDANSHEEHAN.Deaths d
-      JOIN JORDANSHEEHAN.${group2Parts[0]} 
-        ON d.${group2Parts[0]} = ${group2Parts[0]}.id
+      JOIN JORDANSHEEHAN.${group2Parts[0]} g
+        ON d.${group2Parts[0]} = g.id
       ${dateRangeClause}
-      GROUP BY year, month, ${group2Parts[0]}.name
-      HAVING ${group2Parts[0]}.name = '${group2Parts[1]}'
+      GROUP BY year, month, g.name
+      HAVING g.name = '${group2Parts[1]}'
       ORDER BY year, month
     `);
 
@@ -137,6 +137,109 @@ exports.getDiffDataMonthly = async (req, res) => {
     result.map((item) => {
       item.labels = translateLabels(item.labels);
     });
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+exports.getDiffDataYearly = async (req, res) => {
+  try {
+    const group1Parts = req.params.group1.split("_");
+    const group2Parts = req.params.group2.split("_");
+
+    const diffResult = await executeQuery(`
+      SELECT 
+        g1.year,
+        'Difference' as difference,
+        ABS(g1.deaths - g2.deaths) AS deaths
+      FROM 
+        (
+          SELECT 
+            d.year,
+            g.name AS ${group1Parts[0]},
+            AVG(deaths) as deaths
+          FROM JORDANSHEEHAN.Deaths d
+          JOIN JORDANSHEEHAN.${group1Parts[0]} g
+            ON d.${group1Parts[0]} = g.id
+          WHERE year >= ${req.params.min}
+          AND year <= ${req.params.max}
+          GROUP BY year, g.name
+          HAVING g.name = '${group1Parts[1]}'
+        ) g1,
+        (
+          SELECT 
+            d.year,
+            g.name AS ${group2Parts[0]},
+            AVG(deaths) as deaths
+          FROM JORDANSHEEHAN.Deaths d
+          JOIN JORDANSHEEHAN.${group2Parts[0]} g
+            ON d.${group2Parts[0]} = g.id
+          WHERE year >= ${req.params.min}
+          AND year <= ${req.params.max}
+          GROUP BY year, g.name
+          HAVING g.name = '${group2Parts[1]}'
+        ) g2
+      WHERE g1.year = g2.year
+      ORDER BY year
+    `);
+
+    const group1Result = await executeQuery(`
+      SELECT 
+        d.year,
+        g.name AS LABEL,
+        AVG(deaths) as deaths
+      FROM JORDANSHEEHAN.Deaths d
+      JOIN JORDANSHEEHAN.${group1Parts[0]} g
+        ON d.${group1Parts[0]} = g.id
+      WHERE year >= ${req.params.min}
+      AND year <= ${req.params.max}
+      GROUP BY year, g.name
+      HAVING g.name = '${group1Parts[1]}'
+      ORDER BY year
+    `);
+
+    const group2Result = await executeQuery(`
+      SELECT 
+        d.year,
+        g.name AS LABEL,
+        AVG(deaths) as deaths
+      FROM JORDANSHEEHAN.Deaths d
+      JOIN JORDANSHEEHAN.${group2Parts[0]} g
+        ON d.${group2Parts[0]} = g.id
+      WHERE year >= ${req.params.min}
+      AND year <= ${req.params.max}
+      GROUP BY year, g.name
+      HAVING g.name = '${group2Parts[1]}'
+      ORDER BY year
+    `);
+
+    const diffData = await reformatData(
+      diffResult,
+      [{ DIFFERENCE: "Difference" }],
+      "DIFFERENCE",
+      "YEAR",
+      "DEATHS"
+    );
+
+    const group1Data = await reformatData(
+      group1Result,
+      [{ LABEL: `${group1Parts[1]}` }],
+      "LABEL",
+      "YEAR",
+      "DEATHS"
+    );
+
+    const group2Data = await reformatData(
+      group2Result,
+      [{ LABEL: `${group2Parts[1]}` }],
+      "LABEL",
+      "YEAR",
+      "DEATHS"
+    );
+
+    const result = [diffData[0], group1Data[0], group2Data[0]];
     return res.status(200).json(result);
   } catch (err) {
     console.error(err);
