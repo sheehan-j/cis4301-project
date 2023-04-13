@@ -11,7 +11,12 @@ const Selector = ({
 	return (
 		<div style={styles.parameterContainer}>
 			<div style={styles.parameterLabel}>{label}</div>
-			<div style={styles.selectWrapper}>
+			<div
+				style={{
+					...styles.selectWrapper,
+					cursor: isDisabled ? "not-allowed" : "pointer",
+				}}
+			>
 				<Select
 					options={selectOptions}
 					value={value}

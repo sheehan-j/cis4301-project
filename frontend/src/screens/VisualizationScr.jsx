@@ -62,6 +62,8 @@ const VisualizationScr = () => {
 	const [minDateOption, setMinDateOption] = useState(null);
 	const [maxDateOption, setMaxDateOption] = useState(null);
 	const [dateSelectIsDisabled, setDateSelectIsDisabled] = useState(true);
+	const [visualizeButtonIsDisabled, setVisualizeButtonIsDisabled] =
+		useState(true);
 	const [activeTrendlines, setActiveTrendlines] = useState(0);
 	const [legend, setLegend] = useState(null);
 	const [totalTuples, setTotalTuples] = useState("...");
@@ -149,6 +151,40 @@ const VisualizationScr = () => {
 			setCurrentDateOptions(null);
 		}
 	}, [granularityOption]);
+
+	useEffect(() => {
+		switch (activeVisType.value) {
+			case "average":
+			case "maximal":
+				setVisualizeButtonIsDisabled(
+					!groupingOption ||
+						!granularityOption ||
+						!minDateOption ||
+						!maxDateOption
+				);
+				break;
+			case "difference":
+				setVisualizeButtonIsDisabled(
+					!diffTrendline1Option ||
+						!diffTrendline2Option ||
+						!granularityOption ||
+						!minDateOption ||
+						!maxDateOption
+				);
+				break;
+			default:
+				alert("Error in determining visualization button state.");
+				break;
+		}
+	}, [
+		activeVisType,
+		groupingOption,
+		diffTrendline1Option,
+		diffTrendline2Option,
+		granularityOption,
+		minDateOption,
+		maxDateOption,
+	]);
 
 	// Clear fields on visualization type change
 	useEffect(() => {
@@ -258,151 +294,112 @@ const VisualizationScr = () => {
 						/>
 					</div>
 					<div style={styles.parametersSection}>
-						{activeVisType.value === "average" && (
+						<div
+							style={{
+								width: "100%",
+								display: "flex",
+								flexDirection: "row",
+							}}
+						>
+							{(activeVisType.value === "average" ||
+								activeVisType.value === "maximal") && (
+								<>
+									<Selector
+										label={"Trendline Grouping"}
+										selectOptions={trendlineGroupingOptions}
+										value={groupingOption}
+										onChange={setGroupingOption}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Temporal Granularity"}
+										selectOptions={
+											temporalGranularityOptions
+										}
+										value={granularityOption}
+										onChange={setGranularityOption}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Minimum Date"}
+										selectOptions={currentDateOptions}
+										value={minDateOption}
+										onChange={setMinDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+									<Selector
+										label={"Maximum Date"}
+										selectOptions={currentDateOptions}
+										value={maxDateOption}
+										onChange={setMaxDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+								</>
+							)}
+							{activeVisType.value === "difference" && (
+								<>
+									<Selector
+										label={"Trendline 1"}
+										selectOptions={diffTrendlineOptions}
+										value={diffTrendline1Option}
+										onChange={setDiffTrendline1Option}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Trendline 2"}
+										selectOptions={diffTrendlineOptions}
+										value={diffTrendline2Option}
+										onChange={setDiffTrendline2Option}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Temporal Granularity"}
+										selectOptions={
+											temporalGranularityOptions
+										}
+										value={granularityOption}
+										onChange={setGranularityOption}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Minimum Date"}
+										selectOptions={currentDateOptions}
+										value={minDateOption}
+										onChange={setMinDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+									<Selector
+										label={"Maximum Date"}
+										selectOptions={currentDateOptions}
+										value={maxDateOption}
+										onChange={setMaxDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+								</>
+							)}
 							<div
 								style={{
-									width: "100%",
-									display: "flex",
-									flexDirection: "row",
+									...styles.visualizeButton,
+									opacity: visualizeButtonIsDisabled
+										? 0.5
+										: 1,
+									cursor: visualizeButtonIsDisabled
+										? "not-allowed"
+										: "pointer",
 								}}
+								onClick={
+									visualizeButtonIsDisabled
+										? () => {}
+										: handleVisualize
+								}
+								className="buttonScale"
 							>
-								<Selector
-									label={"Trendline Grouping"}
-									selectOptions={trendlineGroupingOptions}
-									value={groupingOption}
-									onChange={setGroupingOption}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Temporal Granularity"}
-									selectOptions={temporalGranularityOptions}
-									value={granularityOption}
-									onChange={setGranularityOption}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Minimum Date"}
-									selectOptions={currentDateOptions}
-									value={minDateOption}
-									onChange={setMinDateOption}
-									isDisabled={dateSelectIsDisabled}
-								/>
-								<Selector
-									label={"Maximum Date"}
-									selectOptions={currentDateOptions}
-									value={maxDateOption}
-									onChange={setMaxDateOption}
-									isDisabled={dateSelectIsDisabled}
-								/>
-								<div
-									style={styles.visualizeButton}
-									onClick={handleVisualize}
-								>
-									<div style={styles.visualizeText}>
-										Visualize
-									</div>
+								<div className="hoverFade"></div>
+								<div style={styles.visualizeText}>
+									Visualize
 								</div>
 							</div>
-						)}
-						{activeVisType.value === "difference" && (
-							<div
-								style={{
-									width: "100%",
-									display: "flex",
-									flexDirection: "row",
-								}}
-							>
-								<Selector
-									label={"Trendline 1"}
-									selectOptions={diffTrendlineOptions}
-									value={diffTrendline1Option}
-									onChange={setDiffTrendline1Option}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Trendline 2"}
-									selectOptions={diffTrendlineOptions}
-									value={diffTrendline2Option}
-									onChange={setDiffTrendline2Option}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Temporal Granularity"}
-									selectOptions={temporalGranularityOptions}
-									value={granularityOption}
-									onChange={setGranularityOption}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Minimum Date"}
-									selectOptions={currentDateOptions}
-									value={minDateOption}
-									onChange={setMinDateOption}
-									isDisabled={dateSelectIsDisabled}
-								/>
-								<Selector
-									label={"Maximum Date"}
-									selectOptions={currentDateOptions}
-									value={maxDateOption}
-									onChange={setMaxDateOption}
-									isDisabled={dateSelectIsDisabled}
-								/>
-								<div
-									style={styles.visualizeButton}
-									onClick={handleVisualize}
-								>
-									<div style={styles.visualizeText}>
-										Visualize
-									</div>
-								</div>
-							</div>
-						)}
-						{activeVisType.value === "maximal" && (
-							<div
-								style={{
-									width: "100%",
-									display: "flex",
-									flexDirection: "row",
-								}}
-							>
-								<Selector
-									label={"Trendline Grouping"}
-									selectOptions={trendlineGroupingOptions}
-									value={groupingOption}
-									onChange={setGroupingOption}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Temporal Granularity"}
-									selectOptions={temporalGranularityOptions}
-									value={granularityOption}
-									onChange={setGranularityOption}
-									isDisabled={false}
-								/>
-								<Selector
-									label={"Minimum Date"}
-									selectOptions={currentDateOptions}
-									value={minDateOption}
-									onChange={setMinDateOption}
-									isDisabled={dateSelectIsDisabled}
-								/>
-								<Selector
-									label={"Maximum Date"}
-									selectOptions={currentDateOptions}
-									value={maxDateOption}
-									onChange={setMaxDateOption}
-									isDisabled={dateSelectIsDisabled}
-								/>
-								<div
-									style={styles.visualizeButton}
-									onClick={handleVisualize}
-								>
-									<div style={styles.visualizeText}>
-										Visualize
-									</div>
-								</div>
-							</div>
-						)}
+						</div>
 					</div>
 				</div>
 
@@ -480,6 +477,13 @@ const VisualizationScr = () => {
 											fontWeight: "400",
 											fontFamily: "Inter",
 											fontSize: "0.8rem",
+											cursor:
+												!groupingOption ||
+												!granularityOption ||
+												!minDateOption ||
+												!maxDateOption
+													? "not-allowed"
+													: "pointer",
 										}}
 									>
 										<Select
@@ -626,7 +630,8 @@ const styles = {
 		paddingRight: "1rem",
 		borderRadius: "10px",
 		marginLeft: "0.5rem",
-		cursor: "pointer",
+		position: "relative",
+		overflow: "hidden",
 	},
 	visualizeText: {
 		fontFamily: "Inter",

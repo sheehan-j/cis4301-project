@@ -13,6 +13,29 @@
 	}
 }
 
+.buttonScale {
+	transition: all ease 0.1s;
+}
+
+.buttonScale:active {
+	transform: scale(1.01);
+}
+
+.hoverFade {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgba(30, 30, 30, 0.15);
+	opacity: 0;
+	transition: all ease 0.1s;
+}
+
+.hoverFade:hover {
+	opacity: 1;
+}
+
 .hideScrollbar {
 	-ms-overflow-style: none;
 }
