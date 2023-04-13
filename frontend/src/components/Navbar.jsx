@@ -11,6 +11,7 @@ const Navbar = ({ active }) => {
 			position: "absolute",
 			top: 0,
 			left: 0,
+			zIndex: 99,
 		},
 		navbar: {
 			width: "100%",
