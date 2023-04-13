@@ -1,5 +1,15 @@
-const getMaxData = async (group, granularity, minDate, maxDate) => {
-	const API_URL = `http://localhost:8089/api/max/${granularity}/${group}/${minDate}/${maxDate}`;
+const getMaxData = async (
+	group,
+	granularity,
+	minDate,
+	maxDate,
+	excludedValues
+) => {
+	let API_URL = `http://localhost:8089/api/max/${granularity}/${group}/${minDate}/${maxDate}`;
+
+	if (excludedValues !== "") {
+		API_URL += `?excludedValues=${excludedValues}`;
+	}
 
 	const response = await fetch(API_URL, {
 		method: "GET",

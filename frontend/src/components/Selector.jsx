@@ -6,7 +6,7 @@ const Selector = ({
 	value,
 	onChange,
 	isDisabled,
-	isSearchable,
+	isMulti,
 }) => {
 	return (
 		<div style={styles.parameterContainer}>
@@ -17,6 +17,7 @@ const Selector = ({
 					value={value}
 					onChange={onChange}
 					isDisabled={isDisabled}
+					isMulti={isMulti}
 				/>
 			</div>
 		</div>
@@ -53,6 +54,11 @@ const styles = {
 		fontSize: "0.8rem",
 		width: "100%",
 		fontFamily: "Inter",
+		whiteSpace: "nowrap",
+	},
+	multiSelect: {
+		whiteSpace: "nowrap",
+		overflow: "scroll",
 	},
 };
 

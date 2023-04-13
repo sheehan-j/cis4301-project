@@ -57,10 +57,12 @@ router
   .route("/state/yearly/:min/:max")
   .get(AvgByStateController.getStateDataYearly);
 
-// TODO: Add yearly option for differnece
 router
   .route("/difference/monthly/:group1/:group2/:min/:max")
   .get(DiffController.getDiffDataMonthly);
+router
+  .route("/difference/yearly/:group1/:group2/:min/:max")
+  .get(DiffController.getDiffDataYearly);
 
 router
   .route("/max/monthly/:group/:min/:max")

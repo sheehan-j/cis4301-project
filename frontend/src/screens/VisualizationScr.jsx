@@ -35,6 +35,7 @@ import { UpdateActiveTrendlines } from "../util/UpdateActiveTrendlines";
 import Loading from "../components/Loading";
 import Navbar from "../components/Navbar";
 import Selector from "../components/Selector";
+import Select from "react-select";
 import TrendlineSelector from "../components/TrendlineSelector";
 import "./VisualizationScr.css";
 
@@ -55,6 +56,7 @@ const VisualizationScr = () => {
 	const [groupingOption, setGroupingOption] = useState(null);
 	const [diffTrendline1Option, setDiffTrendline1Option] = useState(null);
 	const [diffTrendline2Option, setDiffTrendline2Option] = useState(null);
+	const [excludedOptions, setExcludedOptions] = useState([]);
 	const [granularityOption, setGranularityOption] = useState(null);
 	const [currentDateOptions, setCurrentDateOptions] = useState(null);
 	const [minDateOption, setMinDateOption] = useState(null);
@@ -97,12 +99,14 @@ const VisualizationScr = () => {
 	const [navbarHeight, setNavbarHeight] = useState(0);
 	useEffect(() => {
 		const handleResize = () => {
-			const chartDiv = document.getElementById("chart-div");
-			const navbar = document.getElementById("navbar-container");
-			const newWidth = chartDiv.offsetWidth;
-			const newHeight = navbar.offsetHeight;
-			setWidth(newWidth);
-			setNavbarHeight(newHeight);
+			// const chartDiv = document.getElementById("chart-div");
+			// const navbar = document.getElementById("navbar-container");
+			// const newWidth = chartDiv.offsetWidth;
+			// const newHeight = navbar.offsetHeight;
+			setWidth(document.getElementById("chart-div").offsetWidth);
+			setNavbarHeight(
+				document.getElementById("navbar-container").offsetHeight
+			);
 		};
 
 		handleResize();
@@ -157,6 +161,8 @@ const VisualizationScr = () => {
 		setGranularityOption(null);
 		setMinDateOption(null);
 		setMaxDateOption(null);
+		setLegend(null);
+		setExcludedOptions(null);
 		setDiffTrendline1Option(null);
 		setDiffTrendline2Option(null);
 	}, [activeVisType]);
@@ -193,11 +199,22 @@ const VisualizationScr = () => {
 				formattedData = await VisualizeData("difference", result);
 				break;
 			case "maximal":
+				// Process the curent excluded options
+				const excludedValuesArr = [];
+				let excludedValues = "";
+				if (excludedOptions) {
+					excludedOptions.forEach((item) => {
+						excludedValuesArr.push(item.value);
+					});
+					excludedValues = excludedValuesArr.join(",");
+				}
+
 				result = await MaxApi.getMaxData(
 					groupingOption.value,
 					granularityOption.value,
 					minDateOption.value,
-					maxDateOption.value
+					maxDateOption.value,
+					excludedValues
 				);
 
 				formattedData = await VisualizeMultipleDatasets(result);
@@ -241,8 +258,7 @@ const VisualizationScr = () => {
 						/>
 					</div>
 					<div style={styles.parametersSection}>
-						{(activeVisType.value === "average" ||
-							activeVisType.value === "maximal") && (
+						{activeVisType.value === "average" && (
 							<div
 								style={{
 									width: "100%",
@@ -341,6 +357,52 @@ const VisualizationScr = () => {
 								</div>
 							</div>
 						)}
+						{activeVisType.value === "maximal" && (
+							<div
+								style={{
+									width: "100%",
+									display: "flex",
+									flexDirection: "row",
+								}}
+							>
+								<Selector
+									label={"Trendline Grouping"}
+									selectOptions={trendlineGroupingOptions}
+									value={groupingOption}
+									onChange={setGroupingOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Temporal Granularity"}
+									selectOptions={temporalGranularityOptions}
+									value={granularityOption}
+									onChange={setGranularityOption}
+									isDisabled={false}
+								/>
+								<Selector
+									label={"Minimum Date"}
+									selectOptions={currentDateOptions}
+									value={minDateOption}
+									onChange={setMinDateOption}
+									isDisabled={dateSelectIsDisabled}
+								/>
+								<Selector
+									label={"Maximum Date"}
+									selectOptions={currentDateOptions}
+									value={maxDateOption}
+									onChange={setMaxDateOption}
+									isDisabled={dateSelectIsDisabled}
+								/>
+								<div
+									style={styles.visualizeButton}
+									onClick={handleVisualize}
+								>
+									<div style={styles.visualizeText}>
+										Visualize
+									</div>
+								</div>
+							</div>
+						)}
 					</div>
 				</div>
 
@@ -350,6 +412,7 @@ const VisualizationScr = () => {
 						flex: 1,
 						flexDirection: "row",
 					}}
+					id="chart-parent"
 				>
 					<div
 						id="chart-div"
@@ -366,11 +429,13 @@ const VisualizationScr = () => {
 							options={options}
 						/>
 					</div>
-					<div style={styles.sidebar}>
-						<div
-							style={styles.sidebarLabel}
-							className="hideScrollbar"
-						>
+					<div
+						style={{
+							...styles.sidebar,
+							height: `${height}px`,
+						}}
+					>
+						<div className="hideScrollbar">
 							<div style={styles.sidebarLabel}>
 								Active Trendlines
 							</div>
@@ -400,6 +465,39 @@ const VisualizationScr = () => {
 										}
 									/>
 								))}
+							{activeVisType.value === "maximal" && (
+								<>
+									<div
+										style={{
+											...styles.sidebarLabel,
+											marginTop: "2rem",
+										}}
+									>
+										Excluded Groups
+									</div>
+									<div
+										style={{
+											fontWeight: "400",
+											fontFamily: "Inter",
+											fontSize: "0.8rem",
+										}}
+									>
+										<Select
+											options={diffTrendlineOptions}
+											value={excludedOptions}
+											onChange={setExcludedOptions}
+											isMulti
+											// Check that all other selectors are clicked
+											isDisabled={
+												!groupingOption ||
+												!granularityOption ||
+												!minDateOption ||
+												!maxDateOption
+											}
+										/>
+									</div>
+								</>
+							)}
 							{legend && (
 								<div
 									style={{
@@ -408,7 +506,7 @@ const VisualizationScr = () => {
 									}}
 								>
 									Legend
-									{legend.map((item) => (
+									{legend.map((item, index) => (
 										<div
 											style={{
 												marginTop: "0.3rem",
@@ -416,6 +514,7 @@ const VisualizationScr = () => {
 												fontWeight: "400",
 												fontSize: "0.85rem",
 											}}
+											key={index}
 										>
 											{item.key} - {item.value}
 										</div>
@@ -483,6 +582,7 @@ const styles = {
 		marginLeft: "0.5rem",
 		borderRadius: "15px",
 		padding: "1rem",
+		overflow: "scroll",
 	},
 	sidebarInner: {
 		width: "100%",
@@ -541,6 +641,7 @@ const styles = {
 		textAlign: "start",
 		marginBottom: "0.3rem",
 		color: "#363636",
+		overflow: "scroll",
 	},
 };
 

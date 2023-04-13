@@ -6,6 +6,21 @@ exports.getMaxDataMonthly = async (req, res) => {
     const minDateParts = req.params.min.split("_");
     const maxDateParts = req.params.max.split("_");
 
+    // Process any possible excluded values into a clause for the SQL query
+    let excludedValuesClause = ``;
+    if (req.query.excludedValues) {
+      const splitExcludedValues = req.query.excludedValues.split(",");
+
+      splitExcludedValues.forEach((item, index) => {
+        const currValue = item.split("_");
+
+        let currLine = index === 0 ? `WHERE ` : `AND `;
+        currLine += `${currValue[0]}.name <> '${currValue[1]}'\n`;
+
+        excludedValuesClause += currLine;
+      });
+    }
+
     // Format the date range WHERE clause based on the years
     let dateRangeClause;
     switch (parseInt(maxDateParts[1]) - parseInt(minDateParts[1])) {
@@ -42,14 +57,11 @@ exports.getMaxDataMonthly = async (req, res) => {
       WITH avg_deaths AS (
         SELECT DISTINCT year, month, ${req.params.group}, avg(deaths) as deaths
         FROM JORDANSHEEHAN.Deaths d
-        JOIN JORDANSHEEHAN.State s ON d.state = s.id
-        JOIN JORDANSHEEHAN.AgeGroup a ON d.agegroup = a.id
-        JOIN JORDANSHEEHAN.Condition c ON d.condition = c.id
-        JOIN JORDANSHEEHAN.ConditionGroup cg ON d.conditiongroup = cg.id
-        WHERE s.name <> 'United States'
-        AND a.name <> 'All Ages'
-        AND c.name <> 'COVID-19'
-        AND cg.name <> 'COVID-19'
+        JOIN JORDANSHEEHAN.State ON d.state = State.id
+        JOIN JORDANSHEEHAN.AgeGroup ON d.agegroup = AgeGroup.id
+        JOIN JORDANSHEEHAN.Condition ON d.condition = Condition.id
+        JOIN JORDANSHEEHAN.ConditionGroup ON d.conditiongroup = ConditionGroup.id
+        ${excludedValuesClause}
         GROUP BY year, month, ${req.params.group}
       )
       SELECT max1.year, max1.month, g.name, max1.deaths
@@ -128,7 +140,7 @@ const formatMaxDataResult = (queryResult, granularity) => {
 
   queryResult.map((item) => {
     // Check if there is multiple values for a specific month/year, meaning that there are two values that tied for the max for one month/year
-    if (labels.includes(item[granularity])) {
+    if (labels[labels.length - 1] === item[granularity]) {
       // Get the value of the last item in the group array, which is one of the groups that has tied
       const maxGroup1 = group[group.length - 1];
       // Change the value to a combination of the two tied groups
