@@ -51,6 +51,7 @@ export const visTypeOptions = [
 	{ value: "difference", label: "Difference" },
 	{ value: "maximal", label: "Maximal" },
 	{ value: "minimal", label: "Minimal" },
+	{ value: "proportion", label: "Proportion" },
 ];
 
 export const trendlineGroupingOptions = [

@@ -12,7 +12,8 @@ const AvgByConditionController = require("./controllers/AvgByConditionController
 const AvgByConditionGroupController = require("./controllers/AvgByConditionGroupController");
 const TotalCountsController = require("./controllers/TotalCountsController");
 const DiffController = require("./controllers/DiffController");
-const MaxController = require("./controllers/MaxController");
+const MinMaxController = require("./controllers/MinMaxController");
+const ProportionController = require("./controllers/ProportionController");
 
 // Configure middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,6 +33,7 @@ router.use(function (req, res, next) {
 });
 
 // Routes
+// Average routes
 router
   .route("/age-group/monthly/:min/:max")
   .get(AvgByAgeController.getAgeGroupDataMonthly);
@@ -57,6 +59,7 @@ router
   .route("/state/yearly/:min/:max")
   .get(AvgByStateController.getStateDataYearly);
 
+// Diff routes
 router
   .route("/difference/monthly/:group1/:group2/:min/:max")
   .get(DiffController.getDiffDataMonthly);
@@ -64,13 +67,20 @@ router
   .route("/difference/yearly/:group1/:group2/:min/:max")
   .get(DiffController.getDiffDataYearly);
 
+// Min/max routes
 router
   .route("/minmax/monthly/:type/:group/:min/:max")
-  .get(MaxController.getMinMaxDataMonthly);
+  .get(MinMaxController.getMinMaxDataMonthly);
 router
   .route("/minxmax/yearly/:type/:group/:min/:max")
-  .get(MaxController.getMinMaxDataYearly);
+  .get(MinMaxController.getMinMaxDataYearly);
 
+// Proportion routes
+router
+  .route("/proportion/monthly/:group/:min/:max")
+  .get(ProportionController.getProportionDataMonthly);
+
+// Route for getting total tuple count
 router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
 
 // Start server

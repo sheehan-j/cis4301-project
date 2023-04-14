@@ -29,6 +29,7 @@ import { VisualizeData } from "../util/VisualizeData";
 import VisualizeMultipleDatasets from "../util/VisualizeMultipleDatasets";
 import DiffApi from "../api/DiffApi";
 import MinMaxApi from "../api/MinMaxApi";
+import ProportionApi from "../api/ProportionApi";
 import { UpdateActiveTrendlines } from "../util/UpdateActiveTrendlines";
 
 // Components/styling
@@ -171,6 +172,14 @@ const VisualizationScr = () => {
 						!maxDateOption
 				);
 				break;
+			case "proportion":
+				setVisualizeButtonIsDisabled(
+					!diffTrendline1Option ||
+						!granularityOption ||
+						!minDateOption ||
+						!maxDateOption
+				);
+				break;
 			default:
 				alert("Error in determining visualization button state.");
 				break;
@@ -221,6 +230,16 @@ const VisualizationScr = () => {
 				);
 
 				formattedData = await VisualizeData("average", result);
+				break;
+			case "proportion":
+				result = await ProportionApi.getProportionData(
+					diffTrendline1Option.value,
+					granularityOption.value,
+					minDateOption.value,
+					maxDateOption.value
+				);
+
+				formattedData = await VisualizeData("proportion", result);
 				break;
 			case "difference":
 				result = await DiffApi.getDiffData(
@@ -341,17 +360,51 @@ const VisualizationScr = () => {
 							{activeVisType.value === "difference" && (
 								<>
 									<Selector
-										label={"Trendline 1"}
+										label={"Group 1"}
 										selectOptions={diffTrendlineOptions}
 										value={diffTrendline1Option}
 										onChange={setDiffTrendline1Option}
 										isDisabled={false}
 									/>
 									<Selector
-										label={"Trendline 2"}
+										label={"Group 2"}
 										selectOptions={diffTrendlineOptions}
 										value={diffTrendline2Option}
 										onChange={setDiffTrendline2Option}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Temporal Granularity"}
+										selectOptions={
+											temporalGranularityOptions
+										}
+										value={granularityOption}
+										onChange={setGranularityOption}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Minimum Date"}
+										selectOptions={currentDateOptions}
+										value={minDateOption}
+										onChange={setMinDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+									<Selector
+										label={"Maximum Date"}
+										selectOptions={currentDateOptions}
+										value={maxDateOption}
+										onChange={setMaxDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+								</>
+							)}
+							{activeVisType.value === "proportion" && (
+								<>
+									<Selector
+										label={"Group"}
+										selectOptions={diffTrendlineOptions}
+										value={diffTrendline1Option}
+										onChange={setDiffTrendline1Option}
 										isDisabled={false}
 									/>
 									<Selector
