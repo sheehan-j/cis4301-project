@@ -31,6 +31,7 @@ import DiffApi from "../api/DiffApi";
 import MinMaxApi from "../api/MinMaxApi";
 import ProportionApi from "../api/ProportionApi";
 import { UpdateActiveTrendlines } from "../util/UpdateActiveTrendlines";
+import { verifyDates } from "../util/VerifyDates";
 
 // Components/styling
 import Loading from "../components/Loading";
@@ -39,6 +40,7 @@ import Selector from "../components/Selector";
 import Select from "react-select";
 import TrendlineSelector from "../components/TrendlineSelector";
 import "./VisualizationScr.css";
+import SidebarInfo from "../components/SidebarInfo";
 
 ChartJS.register(
 	CategoryScale,
@@ -117,6 +119,7 @@ const VisualizationScr = () => {
 	const height = width / 2;
 	const chartStyle = {
 		opacity: isLoading ? 0.25 : 1,
+		// margin: "auto",
 	};
 
 	// Load total tuple counts on render
@@ -212,6 +215,17 @@ const VisualizationScr = () => {
 	}, [activeVisType]);
 
 	const handleVisualize = async () => {
+		if (
+			verifyDates(
+				minDateOption.value,
+				maxDateOption.value,
+				granularityOption.value
+			) === false
+		) {
+			alert("Please choose valid date range.");
+			return;
+		}
+
 		setIsLoading(true);
 		setVisualizedData(defaultData);
 		setAllData(null);
@@ -461,7 +475,6 @@ const VisualizationScr = () => {
 				<div
 					style={{
 						display: "flex",
-						flex: 1,
 						flexDirection: "row",
 					}}
 					id="chart-parent"
@@ -470,7 +483,6 @@ const VisualizationScr = () => {
 						id="chart-div"
 						style={{
 							...styles.chart,
-							position: "relative",
 							height: `${height}px`,
 						}}
 					>
@@ -482,124 +494,128 @@ const VisualizationScr = () => {
 						/>
 					</div>
 					<div
-						style={{
-							...styles.sidebar,
-							height: `${height}px`,
-						}}
+						style={{ ...styles.sidebarArea, height: `${height}px` }}
 					>
-						<div className="hideScrollbar">
-							<div style={styles.sidebarLabel}>
-								Active Trendlines
-							</div>
-							{!allData && (
-								<TrendlineSelector
-									id={null}
-									label={"No Data Loaded"}
-									active={false}
-									color={null}
-									disabledIfInactive={false}
-									handleOnClick={() => {}}
-								/>
-							)}
-							{allData &&
-								allData.map((item) => (
+						<SidebarInfo type={activeVisType.value} />
+						<div
+							style={{
+								...styles.sidebar,
+							}}
+						>
+							<div className="hideScrollbar">
+								<div style={styles.sidebarLabel}>
+									Active Trendlines
+								</div>
+								{!allData && (
 									<TrendlineSelector
-										key={item.id}
-										id={item.id}
-										label={item.name}
-										active={item.active}
-										color={item.color}
-										disabledIfInactive={
-											activeTrendlines >= 5
-										}
-										handleOnClick={
-											handleTrendlineSelectorClicked
-										}
+										id={null}
+										label={"No Data Loaded"}
+										active={false}
+										color={null}
+										disabledIfInactive={false}
+										handleOnClick={() => {}}
 									/>
-								))}
-							{(activeVisType.value === "maximal" ||
-								activeVisType.value === "minimal") && (
-								<>
+								)}
+								{allData &&
+									allData.map((item) => (
+										<TrendlineSelector
+											key={item.id}
+											id={item.id}
+											label={item.name}
+											active={item.active}
+											color={item.color}
+											disabledIfInactive={
+												activeTrendlines >= 5
+											}
+											handleOnClick={
+												handleTrendlineSelectorClicked
+											}
+										/>
+									))}
+								{(activeVisType.value === "maximal" ||
+									activeVisType.value === "minimal") && (
+									<>
+										<div
+											style={{
+												...styles.sidebarLabel,
+												marginTop: "2rem",
+											}}
+										>
+											Excluded Groups
+										</div>
+										<div
+											style={{
+												fontWeight: "400",
+												fontFamily: "Inter",
+												fontSize: "0.8rem",
+												cursor:
+													!groupingOption ||
+													!granularityOption ||
+													!minDateOption ||
+													!maxDateOption
+														? "not-allowed"
+														: "pointer",
+											}}
+										>
+											<Select
+												options={diffTrendlineOptions}
+												value={excludedOptions}
+												onChange={setExcludedOptions}
+												isMulti
+												// Check that all other selectors are clicked
+												isDisabled={
+													!groupingOption ||
+													!granularityOption ||
+													!minDateOption ||
+													!maxDateOption
+												}
+											/>
+										</div>
+									</>
+								)}
+								{legend && (
 									<div
 										style={{
 											...styles.sidebarLabel,
 											marginTop: "2rem",
 										}}
 									>
-										Excluded Groups
+										Legend
+										{legend.map((item, index) => (
+											<div
+												style={{
+													marginTop: "0.3rem",
+													marginBottom: "0.3rem",
+													fontWeight: "400",
+													fontSize: "0.85rem",
+												}}
+												key={index}
+											>
+												{item.key} - {item.value}
+											</div>
+										))}
 									</div>
-									<div
-										style={{
-											fontWeight: "400",
-											fontFamily: "Inter",
-											fontSize: "0.8rem",
-											cursor:
-												!groupingOption ||
-												!granularityOption ||
-												!minDateOption ||
-												!maxDateOption
-													? "not-allowed"
-													: "pointer",
-										}}
-									>
-										<Select
-											options={diffTrendlineOptions}
-											value={excludedOptions}
-											onChange={setExcludedOptions}
-											isMulti
-											// Check that all other selectors are clicked
-											isDisabled={
-												!groupingOption ||
-												!granularityOption ||
-												!minDateOption ||
-												!maxDateOption
-											}
-										/>
-									</div>
-								</>
-							)}
-							{legend && (
+								)}
 								<div
 									style={{
 										...styles.sidebarLabel,
-										marginTop: "2rem",
+										marginTop: "2rem  ",
 									}}
 								>
-									Legend
-									{legend.map((item, index) => (
-										<div
-											style={{
-												marginTop: "0.3rem",
-												marginBottom: "0.3rem",
-												fontWeight: "400",
-												fontSize: "0.85rem",
-											}}
-											key={index}
-										>
-											{item.key} - {item.value}
-										</div>
-									))}
+									Total Tuples
 								</div>
-							)}
-							<div
-								style={{
-									...styles.sidebarLabel,
-									marginTop: "2rem  ",
-								}}
-							>
-								Total Tuples
-							</div>
-							<div
-								style={{
-									fontFamily: "Inter",
-									fontSize: "1.3rem",
-									fontWeight: "800",
-									textAlign: "start",
-									marginBottom: "0.5rem",
-									color: "#3a5a40 ",
-								}}
-							>
-								{totalTuples}
+								<div
+									style={{
+										fontFamily: "Inter",
+										fontSize: "1.3rem",
+										fontWeight: "800",
+										textAlign: "start",
+										marginBottom: "0.5rem",
+										color: "#3a5a40 ",
+									}}
+								>
+									{totalTuples}
+								</div>
 							</div>
 						</div>
 					</div>
@@ -629,20 +645,29 @@ const styles = {
 	},
 	chart: {
 		width: "75%",
-		padding: "1rem",
-		marginRight: "0.5rem",
+		padding: "1.2rem",
+		marginRight: "0.75rem",
 		backgroundColor: "white",
 		borderRadius: "15px",
+		position: "relative",
+		boxSizing: "border-box",
+	},
+	sidebarArea: {
+		flex: 1,
+		boxSizing: "border-box",
+		display: "flex",
+		flexDirection: "column",
 	},
 	sidebar: {
 		flex: 1,
+		width: "100%",
 		display: "flex",
 		flexDirection: "column",
 		backgroundColor: "white",
-		marginLeft: "0.5rem",
 		borderRadius: "15px",
-		padding: "1rem",
 		overflow: "scroll",
+		padding: "1rem",
+		boxSizing: "border-box",
 	},
 	sidebarInner: {
 		width: "100%",
