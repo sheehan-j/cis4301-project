@@ -79,6 +79,9 @@ router
 router
   .route("/proportion/monthly/:group/:min/:max")
   .get(ProportionController.getProportionDataMonthly);
+router
+  .route("/proportion/yearly/:group/:min/:max")
+  .get(ProportionController.getProportionDataYearly);
 
 // Route for getting total tuple count
 router.route("/total-count").get(TotalCountsController.getTotalTupleCounts);
