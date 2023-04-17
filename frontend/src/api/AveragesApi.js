@@ -50,7 +50,7 @@ const getDataByState = async (granularity, minDate, maxDate) => {
 	return result;
 };
 
-const getDatabyRegion = async (granularity, minDate, maxDate) => {
+const getDataByRegion = async (granularity, minDate, maxDate) => {
 	const API_URL = `http://localhost:8089/api/state/${granularity}/${minDate}/${maxDate}`;
 
 	const response = await fetch(API_URL, {
@@ -68,4 +68,5 @@ module.exports = {
 	getDataByAgeGroup,
 	getDataByCondition,
 	getDataByConditionGroup,
+	getDataByRegion
 };
