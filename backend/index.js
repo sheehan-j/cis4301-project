@@ -6,10 +6,11 @@ const router = express.Router();
 const morgan = require("morgan");
 require("dotenv").config();
 
-const AvgByAgeController = require("./controllers/AvgByAgeController");
-const AvgByStateController = require("./controllers/AvgByStateController");
-const AvgByConditionController = require("./controllers/AvgByConditionController");
-const AvgByConditionGroupController = require("./controllers/AvgByConditionGroupController");
+const AvgByAgeController = require("./controllers/avgByAgeController");
+const AvgByStateController = require("./controllers/avgByStateController");
+const AvgByRegionController = require("./controllers/avgByRegionController");
+const AvgByConditionController = require("./controllers/avgByConditionController");
+const AvgByConditionGroupController = require("./controllers/avgByConditionGroupController");
 const TotalCountsController = require("./controllers/TotalCountsController");
 const DiffController = require("./controllers/DiffController");
 const MinMaxController = require("./controllers/MinMaxController");
@@ -58,6 +59,12 @@ router
 router
   .route("/state/yearly/:min/:max")
   .get(AvgByStateController.getStateDataYearly);
+router
+  .route("/region/monthly/:min/:max")
+  .get(AvgByRegionController.getRegionDataMonthly);
+router
+    .route("/region/yearly/:min/:max")
+    .get(AvgByRegionController.getRegionDataYearly);
 
 // Diff routes
 router
