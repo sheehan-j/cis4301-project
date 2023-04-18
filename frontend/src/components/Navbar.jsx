@@ -63,7 +63,7 @@ const Navbar = ({ active }) => {
 						fontWeight: "700",
 					}}
 				>
-					U.S. COVID-19 Deaths
+					U.S. COVID-19 Deaths Visualizer
 				</div>
 
 				{/* Wrapper for Controls on the Right Side of the Navbar */}

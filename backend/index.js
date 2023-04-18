@@ -72,7 +72,7 @@ router
   .route("/minmax/monthly/:type/:group/:min/:max")
   .get(MinMaxController.getMinMaxDataMonthly);
 router
-  .route("/minxmax/yearly/:type/:group/:min/:max")
+  .route("/minmax/yearly/:type/:group/:min/:max")
   .get(MinMaxController.getMinMaxDataYearly);
 
 // Proportion routes

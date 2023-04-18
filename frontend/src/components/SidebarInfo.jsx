@@ -24,9 +24,9 @@ const SidebarInfo = ({ type }) => {
 				"This visualization graphs the minimum average deaths by month or year and the group responsible. The left y-axis quantifies deaths and the right y-axis corresponds with the legend to map responsible groups. Ties are represented by combining the tied groups names in the legend.";
 			break;
 		case "proportion":
-			title = "Proportion";
+			title = "Ratio";
 			description =
-				"This query computes the proportion the user-specified group makes up of all average deaths. The visualization displays the proportion as a percentage out of 100 and also graphs the user-specified group's average deaths and all average deaths.";
+				"This query computes the ratio of the user-specified group's deaths to all average deaths. The visualization displays the ratio and also graphs the user-specified group's average deaths and all average deaths.";
 			break;
 		default:
 			title = "Missing";

@@ -41,13 +41,13 @@ exports.getProportionDataMonthly = async (req, res) => {
     }
 
     const queryResult = await executeQuery(`
-      SELECT s.year, s.month, s.name AS groupname, (s.specific_deaths/a.all_deaths)*100 AS proportion
+      SELECT s.year, s.month, s.name AS groupname, (s.specific_deaths/a.all_deaths) AS ratio
       FROM (
           SELECT d.year, d.month, g.name as name, AVG(deaths) as specific_deaths
           FROM Deaths d
           JOIN ${groupParts[0]} g ON d.${groupParts[0]} = g.id
-          WHERE g.name = '${groupParts[1]}'
           GROUP BY d.year, d.month, g.name
+          HAVING g.name = '${groupParts[1]}'
       ) s
       JOIN (
           SELECT d.year, d.month, AVG(deaths) as all_deaths
@@ -67,17 +67,17 @@ exports.getProportionDataMonthly = async (req, res) => {
       [{ GROUPNAME: `${groupParts[1]}` }],
       "GROUPNAME",
       "MONTH",
-      "PROPORTION"
+      "RATIO"
     );
-    queryData[0].name = "Proportion";
+    queryData[0].name = "Ratio";
 
     const groupResult = await executeQuery(`
       SELECT s.year, s.month, g.name as groupname, AVG(deaths) as deaths
       FROM Deaths s
       JOIN ${groupParts[0]} g ON s.${groupParts[0]} = g.id
       ${dateRangeClause}
-      AND g.name = '${groupParts[1]}'
       GROUP BY s.year, s.month, g.name
+      HAVING g.name = '${groupParts[1]}'
       ORDER BY s.year, s.month
     `);
 
@@ -95,8 +95,8 @@ exports.getProportionDataMonthly = async (req, res) => {
       FROM Deaths s
       JOIN AgeGroup ag ON s.agegroup = ag.id
       ${dateRangeClause}
-      AND ag.name = 'All Ages'
       GROUP by s.year, s.month, ag.name
+      HAVING ag.name = 'All Ages'
       ORDER BY s.year, s.month
     `);
 
@@ -125,13 +125,13 @@ exports.getProportionDataYearly = async (req, res) => {
     const groupParts = req.params.group.split("_");
 
     const queryResult = await executeQuery(`
-      SELECT s.year, s.name AS groupname, (s.specific_deaths/a.all_deaths)*100 AS proportion
+      SELECT s.year, s.name AS groupname, (s.specific_deaths/a.all_deaths) AS ratio
       FROM (
           SELECT d.year, g.name as name, AVG(deaths) as specific_deaths
           FROM Deaths d
           JOIN ${groupParts[0]} g ON d.${groupParts[0]} = g.id
-          WHERE g.name = '${groupParts[1]}'
           GROUP BY d.year, g.name
+          HAVING g.name = '${groupParts[1]}'
       ) s
       JOIN (
           SELECT d.year, AVG(deaths) as all_deaths
@@ -152,9 +152,9 @@ exports.getProportionDataYearly = async (req, res) => {
       [{ GROUPNAME: `${groupParts[1]}` }],
       "GROUPNAME",
       "YEAR",
-      "PROPORTION"
+      "RATIO"
     );
-    queryData[0].name = "Proportion";
+    queryData[0].name = "Ratio";
 
     const groupResult = await executeQuery(`
       SELECT s.year, g.name as groupname, AVG(deaths) as deaths
@@ -162,8 +162,8 @@ exports.getProportionDataYearly = async (req, res) => {
       JOIN ${groupParts[0]} g ON s.${groupParts[0]} = g.id
       WHERE s.year >= ${req.params.min}
       AND s.year <= ${req.params.max}
-      AND g.name = '${groupParts[1]}'
       GROUP BY s.year, g.name
+      HAVING g.name = '${groupParts[1]}'
       ORDER BY s.year
     `);
 
@@ -182,8 +182,8 @@ exports.getProportionDataYearly = async (req, res) => {
       JOIN AgeGroup ag ON s.agegroup = ag.id
       WHERE s.year >= ${req.params.min}
       AND s.year <= ${req.params.max}
-      AND ag.name = 'All Ages'
       GROUP by s.year, ag.name
+      HAVING ag.name = 'All Ages'
       ORDER BY s.year
     `);
 
@@ -196,6 +196,7 @@ exports.getProportionDataYearly = async (req, res) => {
     );
 
     const result = [queryData[0], groupData[0], allData[0]];
+    console.log(JSON.stringify(result));
     return res.status(200).json(result);
   } catch (err) {
     console.error(err);

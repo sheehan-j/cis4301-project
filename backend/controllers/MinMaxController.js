@@ -95,18 +95,30 @@ exports.getMinMaxDataMonthly = async (req, res) => {
 };
 
 exports.getMinMaxDataYearly = async (req, res) => {
+  // Process any possible excluded values into a clause for the SQL query
+  let excludedValuesClause = ``;
+  if (req.query.excludedValues) {
+    const splitExcludedValues = req.query.excludedValues.split(",");
+
+    splitExcludedValues.forEach((item, index) => {
+      const currValue = item.split("_");
+
+      let currLine = index === 0 ? `WHERE ` : `AND `;
+      currLine += `${currValue[0]}.name <> '${currValue[1]}'\n`;
+
+      excludedValuesClause += currLine;
+    });
+  }
+
   const queryResult = await executeQuery(`
       WITH avg_deaths AS (
         SELECT DISTINCT year, ${req.params.group}, avg(deaths) as deaths
         FROM JORDANSHEEHAN.Deaths d
-        JOIN JORDANSHEEHAN.State s ON d.state = s.id
-        JOIN JORDANSHEEHAN.AgeGroup a ON d.agegroup = a.id
-        JOIN JORDANSHEEHAN.Condition c ON d.condition = c.id
-        JOIN JORDANSHEEHAN.ConditionGroup cg ON d.conditiongroup = cg.id
-        WHERE s.name <> 'United States'
-        AND a.name <> 'All Ages'
-        AND c.name <> 'COVID-19'
-        AND cg.name <> 'COVID-19'
+        JOIN JORDANSHEEHAN.State ON d.state = State.id
+        JOIN JORDANSHEEHAN.AgeGroup ON d.agegroup = AgeGroup.id
+        JOIN JORDANSHEEHAN.Condition ON d.condition = Condition.id
+        JOIN JORDANSHEEHAN.ConditionGroup ON d.conditiongroup = ConditionGroup.id
+        ${excludedValuesClause}
         GROUP BY year, ${req.params.group}
       )
       SELECT d1.year, g.name, d1.deaths

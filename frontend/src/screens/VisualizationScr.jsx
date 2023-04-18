@@ -138,7 +138,7 @@ const VisualizationScr = () => {
 		loadTotalTuples();
 	}, []);
 
-	// Handle necessary changes for temporal granularity
+	// Handle necessary changes for Time Interval
 	useEffect(() => {
 		setDateSelectIsDisabled(granularityOption === null ? true : false);
 		setMinDateOption(null);
@@ -347,7 +347,7 @@ const VisualizationScr = () => {
 										isDisabled={false}
 									/>
 									<Selector
-										label={"Temporal Granularity"}
+										label={"Time Interval"}
 										selectOptions={
 											temporalGranularityOptions
 										}
@@ -388,7 +388,7 @@ const VisualizationScr = () => {
 										isDisabled={false}
 									/>
 									<Selector
-										label={"Temporal Granularity"}
+										label={"Time Interval"}
 										selectOptions={
 											temporalGranularityOptions
 										}
@@ -422,7 +422,7 @@ const VisualizationScr = () => {
 										isDisabled={false}
 									/>
 									<Selector
-										label={"Temporal Granularity"}
+										label={"Time Interval"}
 										selectOptions={
 											temporalGranularityOptions
 										}

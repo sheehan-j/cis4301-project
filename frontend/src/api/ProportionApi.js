@@ -7,6 +7,9 @@ const getProportionData = async (group, granularity, minDate, maxDate) => {
 			"Content-Type": "application/json",
 		},
 	});
+	if (response.status !== 200) {
+		alert("Error making request to server.");
+	}
 	const result = await response.json();
 	return result;
 };
