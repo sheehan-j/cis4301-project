@@ -73,9 +73,9 @@ exports.getRegionDataMonthly = async (req, res) => {
     );
 
     // Translate month numbers into text labels
-    // result.map((item) => {
-    //   item.labels = translateLabels(item.labels);
-    // });
+    result.map((item) => {
+      item.labels = translateLabels(item.labels);
+    });
 
     return res.status(200).json(result);
   } catch (err) {
