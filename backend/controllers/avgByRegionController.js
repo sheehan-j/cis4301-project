@@ -15,29 +15,29 @@ exports.getRegionDataMonthly = async (req, res) => {
       case 0: // Same year
         dateRangeClause = `
           WHERE 
-            (year = ${minDateParts[1]})
+            ((year = ${minDateParts[1]})
             AND
             (month >= ${minDateParts[0]})
             AND
-            (month <= ${maxDateParts[0]})
+            (month <= ${maxDateParts[0]}))
         `;
         break;
       case 1: // 1 Year apart
         dateRangeClause = `
           WHERE 
-            (year = ${minDateParts[1]} AND month >= ${minDateParts[0]})
+            ((year = ${minDateParts[1]} AND month >= ${minDateParts[0]})
             OR
-            (year = ${maxDateParts[1]} AND month <= ${maxDateParts[0]})
+            (year = ${maxDateParts[1]} AND month <= ${maxDateParts[0]}))
         `;
         break;
       default: // 2+ Years apart
         dateRangeClause = `
           WHERE 
-            (year = ${minDateParts[1]} AND month >= ${minDateParts[0]})
+            ((year = ${minDateParts[1]} AND month >= ${minDateParts[0]})
             OR 
             (year > ${minDateParts[1]} AND year < ${maxDateParts[1]})
             OR
-            (year = ${maxDateParts[1]} AND month <= ${maxDateParts[0]})
+            (year = ${maxDateParts[1]} AND month <= ${maxDateParts[0]}))
         `;
     }
 
@@ -45,19 +45,23 @@ exports.getRegionDataMonthly = async (req, res) => {
       SELECT 
         year, 
         month, 
-        s.region as region, 
+        s.regionname as region, 
         AVG(deaths) as deaths
       FROM JORDANSHEEHAN.Deaths d
       JOIN JORDANSHEEHAN.State s ON d.state = s.id
       ${dateRangeClause}
-      GROUP BY year, month, s.region
-      ORDER BY year, month, s.region
+        AND s.regionname != 'Territories'
+        AND s.regionname != 'United States'
+      GROUP BY year, month, s.regionname
+      ORDER BY year, month, s.regionname
     `);
 
     const regions = await executeQuery(`
-      SELECT region
-      FROM JORDANSHeehan.State
-      ORDER BY region
+      SELECT regionname as region
+      FROM JORDANSHEEHAN.State
+      WHERE regionname != 'Territories' AND regionname != 'United States'
+      GROUP BY regionname
+      ORDER BY regionname
     `);
 
     const result = await reformatData(
@@ -69,9 +73,9 @@ exports.getRegionDataMonthly = async (req, res) => {
     );
 
     // Translate month numbers into text labels
-    result.map((item) => {
-      item.labels = translateLabels(item.labels);
-    });
+    // result.map((item) => {
+    //   item.labels = translateLabels(item.labels);
+    // });
 
     return res.status(200).json(result);
   } catch (err) {
@@ -85,25 +89,29 @@ exports.getRegionDataYearly = async (req, res) => {
     const queryResult = await executeQuery(`
       SELECT 
         year, 
-        s.region as region, 
+        s.regionname as region, 
         AVG(deaths) as deaths
       FROM JORDANSHEEHAN.Deaths d
       JOIN JORDANSHEEHAN.State s ON d.state = s.id
       WHERE year >= ${req.params.min}
         AND year <= ${req.params.max}
-      GROUP BY year, s.region
-      ORDER BY year, s.region
+        AND s.regionname != 'Territories'
+        AND s.regionname != 'United States'
+      GROUP BY year, s.regionname
+      ORDER BY year, s.regionname
     `);
 
-    const states = await executeQuery(`
-      SELECT region
-      FROM JORDANSHeehan.State
-      ORDER BY region
+    const regions = await executeQuery(`
+      SELECT regionname as region
+      FROM JORDANSHEEHAN.State
+      WHERE regionname != 'Territories' AND regionname != 'United States'
+      GROUP BY regionname
+      ORDER BY regionname
     `);
 
     const result = await reformatData(
       queryResult,
-      states,
+      regions,
       "REGION",
       "YEAR",
       "DEATHS"
