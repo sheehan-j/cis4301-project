@@ -32,6 +32,13 @@ const AverageApiCall = async (grouping, granularity, minDate, maxDate) => {
 				maxDate
 			);
 			break;
+		case "region":
+			result = await AveragesApi.getDataByRegion(
+				granularity,
+				minDate,
+				maxDate
+			);
+			break;
 		default:
 			return null;
 	}

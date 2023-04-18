@@ -59,6 +59,7 @@ export const trendlineGroupingOptions = [
 	{ value: "condition", label: "Condition" },
 	{ value: "conditiongroup", label: "Condition Group" },
 	{ value: "state", label: "State" },
+	{ value: "region", label: "Region"}
 ];
 
 export const diffTrendlineOptions = [
