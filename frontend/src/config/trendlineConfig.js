@@ -54,12 +54,19 @@ export const visTypeOptions = [
 	{ value: "proportion", label: "Ratio" },
 ];
 
+export const trendlineGroupingOptionsAverage = [
+	{ value: "agegroup", label: "Age Group" },
+	{ value: "condition", label: "Condition" },
+	{ value: "conditiongroup", label: "Condition Group" },
+	{ value: "state", label: "State" },
+	{ value: "region", label: "Region" },
+];
+
 export const trendlineGroupingOptions = [
 	{ value: "agegroup", label: "Age Group" },
 	{ value: "condition", label: "Condition" },
 	{ value: "conditiongroup", label: "Condition Group" },
 	{ value: "state", label: "State" },
-	{ value: "region", label: "Region"}
 ];
 
 export const diffTrendlineOptions = [

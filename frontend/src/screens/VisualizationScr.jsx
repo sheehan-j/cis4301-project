@@ -14,6 +14,7 @@ import { Line } from "react-chartjs-2";
 // Config
 import {
 	defaultData,
+	trendlineGroupingOptionsAverage,
 	trendlineGroupingOptions,
 	temporalGranularityOptions,
 	monthlyDateOptions,
@@ -335,8 +336,43 @@ const VisualizationScr = () => {
 								flexDirection: "row",
 							}}
 						>
-							{(activeVisType.value === "average" ||
-								activeVisType.value === "maximal" ||
+							{activeVisType.value === "average" && (
+								<>
+									<Selector
+										label={"Trendline Grouping"}
+										selectOptions={
+											trendlineGroupingOptionsAverage
+										}
+										value={groupingOption}
+										onChange={setGroupingOption}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Time Interval"}
+										selectOptions={
+											temporalGranularityOptions
+										}
+										value={granularityOption}
+										onChange={setGranularityOption}
+										isDisabled={false}
+									/>
+									<Selector
+										label={"Minimum Date"}
+										selectOptions={currentDateOptions}
+										value={minDateOption}
+										onChange={setMinDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+									<Selector
+										label={"Maximum Date"}
+										selectOptions={currentDateOptions}
+										value={maxDateOption}
+										onChange={setMaxDateOption}
+										isDisabled={dateSelectIsDisabled}
+									/>
+								</>
+							)}
+							{(activeVisType.value === "maximal" ||
 								activeVisType.value === "minimal") && (
 								<>
 									<Selector
